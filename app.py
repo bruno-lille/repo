@@ -32,7 +32,7 @@ nav_buttons = """
 """
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-04-18_00-43-06"
+APP_BUILD = "2026-04-18_00-45-38"
 APP_NOTE = "dev en cours"
 
 
