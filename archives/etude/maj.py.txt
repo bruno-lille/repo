@@ -1,0 +1,144 @@
+import pandas as pd
+import requests
+import time
+import re
+from rapidfuzz import fuzz
+
+# 🔧 PARAMÈTRES
+MAX_FILMS = 20
+API_KEY = "0458b97834e41cd8c1e0f3364d6703d6"
+
+# 📂 LECTURE EXCEL
+df = pd.read_excel("films.xlsx", sheet_name="Feuil1")
+
+# 🧱 CRÉATION COLONNES
+cols = ["TMDB_ID", "Jaquette", "Annee", "Genres", "Resume", "Casting"]
+for col in cols:
+    if col not in df.columns:
+        df[col] = ""
+    df[col] = df[col].astype(str)
+
+# 🧹 NETTOYAGE TITRE
+def clean_title(title):
+    title = str(title)
+    title = re.sub(r"\(.*?\)", "", title)
+    title = re.sub(r"[^a-zA-Z0-9 ]", " ", title)
+    return title.strip()
+
+# 🚫 FILTRAGE TITRES INVALIDES
+def is_valid_title(title):
+    title = title.strip()
+    if len(title) < 2:
+        return False
+    if title.isdigit():
+        return False
+    return True
+
+# 🔍 TEST VIDE
+def is_empty(val):
+    if pd.isna(val):
+        return True
+    val = str(val).strip().lower()
+    return val in ["", "nan"]
+
+# 🎬 ENRICHISSEMENT FILM
+def enrich_film(title):
+    try:
+        title_clean = clean_title(title)
+
+        url = "https://api.themoviedb.org/3/search/movie"
+        params = {
+            "api_key": API_KEY,
+            "query": title_clean,
+            "language": "fr-FR"
+        }
+
+        r = requests.get(url, params=params).json()
+
+        if not r.get("results"):
+            return None
+
+        # 🔥 MEILLEUR MATCH (fuzzy)
+        best_film = None
+        best_score = 0
+
+        for f in r["results"][:5]:
+            score = fuzz.partial_ratio(title_clean.lower(), f["title"].lower())
+            if score > best_score:
+                best_score = score
+                best_film = f
+
+        if best_score < 60:
+            return None
+
+        film = best_film
+        tmdb_id = str(film["id"])
+
+        # 🎬 DÉTAILS
+        details_url = f"https://api.themoviedb.org/3/movie/{tmdb_id}"
+        params_details = {
+            "api_key": API_KEY,
+            "language": "fr-FR",
+            "append_to_response": "credits"
+        }
+
+        d = requests.get(details_url, params=params_details).json()
+
+        year = str(d.get("release_date", "")[:4])
+        genres = ", ".join([g["name"] for g in d.get("genres", [])])
+
+        poster = ""
+        if d.get("poster_path"):
+            poster = f"https://image.tmdb.org/t/p/w300{d['poster_path']}"
+
+        overview = d.get("overview", "")
+
+        cast_list = d.get("credits", {}).get("cast", [])
+        cast = ", ".join([actor["name"] for actor in cast_list[:5]])
+
+        return [tmdb_id, poster, year, genres, overview, cast]
+
+    except Exception as e:
+        print("Erreur :", title, e)
+        return None
+
+
+# 🚀 LANCEMENT
+print("Enrichissement en cours...")
+
+count = 0
+
+for i in range(len(df)):
+
+    titre = str(df.iloc[i, 5]) if not pd.isna(df.iloc[i, 5]) else ""
+
+    if not is_valid_title(titre):
+        continue
+
+    if not is_empty(df.at[i, "TMDB_ID"]):
+        continue
+
+    if count >= MAX_FILMS:
+        break
+
+    print("Film :", titre)
+
+    result = enrich_film(titre)
+
+    if result:
+        df.at[i, "TMDB_ID"] = result[0]
+        df.at[i, "Jaquette"] = result[1]
+        df.at[i, "Annee"] = result[2]
+        df.at[i, "Genres"] = result[3]
+        df.at[i, "Resume"] = result[4]
+        df.at[i, "Casting"] = result[5]
+
+        count += 1
+        time.sleep(0.25)
+
+print(count, "films enrichis")
+
+# 💾 SAUVEGARDE
+df.to_excel("films.xlsx", index=False, sheet_name="Feuil1")
+
+print("Fichier mis à jour : films.xlsx")

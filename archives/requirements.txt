@@ -1,0 +1,10 @@
+<<<<<<< HEAD
+flask
+requests
+gunicorn
+=======
+Flask
+openpyxl
+rapidfuzz
+requests
+>>>>>>> 74ef8156350a75f659a13cd0f50d51d49cac0bac

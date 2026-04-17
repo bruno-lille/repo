@@ -1,0 +1,1 @@
+=SI(OU(M2="";N2="");LIEN_HYPERTEXTE("https://www.themoviedb.org/search?query=" & SUBSTITUE(F2;" ";"%20");"🔎 " & F2);"")

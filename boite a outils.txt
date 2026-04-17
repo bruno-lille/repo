@@ -1,0 +1,7 @@
+APP_VERSION = "V1-dev"
+APP_BUILD = "DEV_BUILD"
+APP_NOTE = "dev en cours"
+
+
+------------------------------
+
