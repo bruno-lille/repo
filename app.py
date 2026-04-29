@@ -7,6 +7,11 @@ import urllib.parse
 import unicodedata
 import re
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+FLAG_PATH = os.path.join(BASE_DIR, "no_cleanup.flag")
+DB_PATH = os.path.join(BASE_DIR, "films.db")
+TMP_PATH = os.path.join(BASE_DIR, "backup_temp.db")
+
 ENV = os.getenv("ENV", "DEV")
 
 def get_github_token():
@@ -32,7 +37,7 @@ nav_buttons = """
 """
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-04-29_10-49-00"
+APP_BUILD = "2026-04-29_12-49-36"
 APP_NOTE = "dev en cours"
 
 
@@ -40,9 +45,7 @@ APP_NOTE = "dev en cours"
 
 
 
-# 🔧 Chemin base de données (UNIQUE)
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.path.join(BASE_DIR, "films.db")
+
 
 # 🔄 Cache mémoire
 DATA = None
@@ -157,6 +160,7 @@ def restore_db():
         # 💾 écriture directe (PAS de vérification locale)
         with open(DB_PATH, "wb") as f:
             f.write(r.content)
+
 
         print(f"✅ DB restaurée : {latest['name']}")
 
@@ -1284,9 +1288,7 @@ def backup_db():
 
     print("STEP 1: start backup")
 
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    DB_PATH = os.path.join(BASE_DIR, "films.db")
-    TMP_PATH = os.path.join(BASE_DIR, "backup_temp.db")
+
 
     token = GITHUB_TOKEN
     repo = "bruno-lille/repo"
@@ -1347,6 +1349,13 @@ def backup_db():
         # ==================================================
         # 🧠 NETTOYAGE INTELLIGENT
         # ==================================================
+        
+        # 🔥 sécurité import
+        if os.path.exists(FLAG_PATH):
+            print("⚠️ Cleanup désactivé (import récent)")
+            os.remove(FLAG_PATH)
+            return f"Backup OK → {backup_status}"
+            
 
         print("STEP 6: listing backups")
 
@@ -1507,6 +1516,12 @@ def manual_add():
 
     # 🔥 retour à la recherche
     return redirect(f"/?q={title}")
+    
+#--------Flag test temporaire---------
+@app.route("/test_flag")
+def test_flag():
+    open(FLAG_PATH, "w").close()
+    return "FLAG CREATED"
     
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
