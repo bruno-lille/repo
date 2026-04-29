@@ -12,6 +12,8 @@ FLAG_PATH = os.path.join(BASE_DIR, "no_cleanup.flag")
 DB_PATH = os.path.join(BASE_DIR, "films.db")
 TMP_PATH = os.path.join(BASE_DIR, "backup_temp.db")
 
+NO_CLEANUP = False
+
 ENV = os.getenv("ENV", "DEV")
 
 def get_github_token():
@@ -37,7 +39,7 @@ nav_buttons = """
 """
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-04-29_12-49-36"
+APP_BUILD = "2026-04-29_13-01-20"
 APP_NOTE = "dev en cours"
 
 
@@ -1345,6 +1347,13 @@ def backup_db():
             return f"❌ Backup erreur {r.status_code}"
 
         print(f"✅ Backup créé : {filename}")
+        
+        global NO_CLEANUP
+
+        if NO_CLEANUP:
+            print("⚠️ Cleanup désactivé (import récent)")
+            NO_CLEANUP = False
+            return f"Backup OK → {backup_status}"
 
         # ==================================================
         # 🧠 NETTOYAGE INTELLIGENT
@@ -1520,7 +1529,8 @@ def manual_add():
 #--------Flag test temporaire---------
 @app.route("/test_flag")
 def test_flag():
-    open(FLAG_PATH, "w").close()
+    global NO_CLEANUP
+    NO_CLEANUP = True
     return "FLAG CREATED"
     
 if __name__ == "__main__":
