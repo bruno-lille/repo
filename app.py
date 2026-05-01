@@ -12,6 +12,27 @@ FLAG_PATH = os.path.join(BASE_DIR, "no_cleanup.flag")
 DB_PATH = os.path.join(BASE_DIR, "films.db")
 TMP_PATH = os.path.join(BASE_DIR, "backup_temp.db")
 
+import time
+
+CLEANUP_FILE = os.path.join(BASE_DIR, "last_cleanup.txt")
+
+def should_cleanup():
+    if not os.path.exists(CLEANUP_FILE):
+        return True
+    try:   
+    with open(CLEANUP_FILE, "r") as f:
+        last = float(f.read())
+        
+     except:
+        return True  # sécurité
+
+    return time.time() - last > 3600  # 1h
+
+
+def mark_cleanup():
+    with open(CLEANUP_FILE, "w") as f:
+        f.write(str(time.time()))
+
 
 
 ENV = os.getenv("ENV", "DEV")
@@ -39,7 +60,7 @@ nav_buttons = """
 """
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-05-01_19-30-47"
+APP_BUILD = "2026-05-01_19-57-10"
 APP_NOTE = "dev en cours"
 
 
@@ -1405,7 +1426,15 @@ def backup_db():
         ]
 
         print("STEP 8: db_files =", len(db_files))
+        
+        # 🧠 ANTI-SPAM CLEANUP
+        if not should_cleanup():
+            print("⏱️ Cleanup ignoré (trop récent)")
+            return f"Backup OK → {backup_status}"
 
+        mark_cleanup()
+
+        # 🔥 TRI
         db_files_sorted = sorted(db_files, key=lambda x: x["name"], reverse=True)
 
         KEEP = 20
