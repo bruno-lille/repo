@@ -39,7 +39,7 @@ nav_buttons = """
 """
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-05-01_19-14-41"
+APP_BUILD = "2026-05-01_19-24-11"
 APP_NOTE = "dev en cours"
 
 
@@ -170,9 +170,19 @@ def restore_db():
                 return
 
         # 💾 écriture directe (PAS de vérification locale)
-        with open(DB_PATH, "wb") as f:
+        tmp_restore = DB_PATH + ".restore"
+
+        with open(tmp_restore, "wb") as f:
             f.write(r.content)
 
+        # 🔍 vérification taille minimale
+        if os.path.getsize(tmp_restore) < 1000:
+            print("❌ Restore invalide (fichier trop petit)")
+            os.remove(tmp_restore)
+            return
+
+        # 🔥 remplacement sécurisé
+        os.replace(tmp_restore, DB_PATH)
 
         print(f"✅ DB restaurée : {latest['name']}")
 
