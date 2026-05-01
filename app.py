@@ -39,7 +39,7 @@ nav_buttons = """
 """
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-05-01_18-39-33"
+APP_BUILD = "2026-05-01_18-59-53"
 APP_NOTE = "dev en cours"
 
 
@@ -1374,7 +1374,6 @@ def backup_db():
             print("⚠️ Cleanup désactivé (import récent)")
             os.remove(FLAG_PATH)
             return f"Backup OK → {backup_status}"
-            
 
         print("STEP 6: listing backups")
 
@@ -1395,88 +1394,35 @@ def backup_db():
 
         print("STEP 8: db_files =", len(db_files))
 
-        if len(db_files) <= 50:
-            return f"Backup OK → {backup_status}"
-
+        # 🔥 TRI
         db_files_sorted = sorted(db_files, key=lambda x: x["name"], reverse=True)
 
-        def extract_date(filename):
+        KEEP = 20
+
+        if len(db_files_sorted) <= KEEP:
+            print("🟢 Rien à supprimer")
+            return f"Backup OK → {backup_status}"
+
+        to_delete = db_files_sorted[KEEP:]
+
+        print("STEP 9: deleting old backups =", len(to_delete))
+
+        for f in to_delete:
+            delete_data = {
+                "message": f"delete old backup {f['name']}",
+                "sha": f["sha"],
+                "branch": "main"
+            }
+
             try:
-                date_str = filename.replace("films_", "").replace(".db", "")
-                return datetime.strptime(date_str, "%Y-%m-%d_%H-%M-%S")
+                requests.delete(f["url"], json=delete_data, headers=headers, timeout=5)
+                print("🗑️ OK:", f["name"])
             except Exception as e:
-                print("❌ DATE ERROR:", filename, e)
-                return datetime.min
-
-        recent = []
-        weekly = {}
-        monthly = {}
-
-        for f in db_files_sorted:
-
-            try:
-                date = extract_date(f["name"])
-            except Exception as e:
-                print("❌ LOOP DATE ERROR:", f["name"], e)
-                continue
-
-            if date == datetime.min:
-                continue
-
-            if len(recent) < 34:
-                recent.append(f)
-                continue
-
-            week_key = date.strftime("%Y-%W")
-            if week_key not in weekly and len(weekly) < 4:
-                weekly[week_key] = f
-                continue
-
-            month_key = date.strftime("%Y-%m")
-            if month_key not in monthly:
-                monthly[month_key] = f
-                continue
-
-        keep = set()
-
-        keep.update(f["name"] for f in recent)
-        keep.update(f["name"] for f in weekly.values())
-        keep.update(f["name"] for f in monthly.values())
-
-        print("STEP 9: deleting old backups")
-
-        count = 0  # 🔥 AJOUT
-
-        for f in db_files_sorted:
-            if f["name"] not in keep:
-                
-                if count >= 10:  # 🔥 LIMITE
-                    break
-
-                delete_data = {
-                    "message": f"delete old backup {f['name']}",
-                    "sha": f["sha"],
-                    "branch": "main"
-                }
-
-                try:
-                    requests.delete(f["url"], json=delete_data, headers=headers, timeout=5)
-                    print("🗑️ OK:", f["name"])
-                    count += 1  # 🔥 INCRÉMENT
-                except Exception as e:
-                    print("❌ DELETE ERROR:", f["name"], e)
+                print("❌ DELETE ERROR:", f["name"], e)
 
         print("STEP FINAL: success")
 
         return f"Backup OK → {backup_status}"
-
-    except Exception as e:
-        print("❌ ERREUR BACKUP :", e)
-        return "❌ Backup crash"
-
-    finally:
-        if os.path.exists(TMP_PATH):
-            os.remove(TMP_PATH)
             
 #----------nouvelle route---------
 
