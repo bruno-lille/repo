@@ -19,14 +19,14 @@ CLEANUP_FILE = os.path.join(BASE_DIR, "last_cleanup.txt")
 def should_cleanup():
     if not os.path.exists(CLEANUP_FILE):
         return True
-    try:   
-    with open(CLEANUP_FILE, "r") as f:
-        last = float(f.read())
-        
-     except:
+
+    try:
+        with open(CLEANUP_FILE, "r") as f:
+            last = float(f.read())
+    except:
         return True  # sécurité
 
-    return time.time() - last > 3600  # 1h
+    return time.time() - last > 3600
 
 
 def mark_cleanup():
@@ -60,7 +60,7 @@ nav_buttons = """
 """
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-05-01_20-02-11"
+APP_BUILD = "2026-05-01_20-07-42"
 APP_NOTE = "dev en cours"
 
 
