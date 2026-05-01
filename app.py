@@ -39,7 +39,7 @@ nav_buttons = """
 """
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-05-01_18-31-39"
+APP_BUILD = "2026-05-01_18-33-56"
 APP_NOTE = "dev en cours"
 
 
@@ -119,6 +119,8 @@ def get_latest_backup(files, headers):
 
 
 def restore_db():
+    
+    print("🔥 RESTORE déclenché")
 
     try:
         token = GITHUB_TOKEN
