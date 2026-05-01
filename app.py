@@ -39,7 +39,7 @@ nav_buttons = """
 """
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-05-01_18-06-00"
+APP_BUILD = "2026-05-01_18-31-39"
 APP_NOTE = "dev en cours"
 
 
@@ -158,6 +158,14 @@ def restore_db():
         if r.status_code != 200:
             print("❌ Erreur téléchargement DB")
             return
+
+        # 🔐 sécurité : ne pas écraser une DB valide
+        if os.path.exists(DB_PATH):
+            size = os.path.getsize(DB_PATH)
+
+            if size > 10000:  # seuil simple (DB valide)
+                print("⚠️ DB locale déjà valide → restore ignoré")
+                return
 
         # 💾 écriture directe (PAS de vérification locale)
         with open(DB_PATH, "wb") as f:
@@ -1526,12 +1534,7 @@ def manual_add():
     # 🔥 retour à la recherche
     return redirect(f"/?q={title}")
     
-#--------Flag test temporaire---------
-@app.route("/test_flag")
-def test_flag():
-    with open(FLAG_PATH, "w") as f:
-        f.write("1")
-    return "FLAG CREATED"
+
     
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
