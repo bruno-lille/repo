@@ -39,7 +39,7 @@ nav_buttons = """
 """
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-05-01_19-24-11"
+APP_BUILD = "2026-05-01_19-30-47"
 APP_NOTE = "dev en cours"
 
 
@@ -1300,6 +1300,8 @@ def prefill(disc_id, tmdb_id):
 
 @app.route("/backup_db", methods=["GET", "HEAD"])
 def backup_db():
+    
+    print("🧪 NOUVEAU CLEANUP ACTIF")
 
     import os
     import base64
