@@ -39,7 +39,7 @@ nav_buttons = """
 """
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-05-01_18-33-56"
+APP_BUILD = "2026-05-01_18-39-33"
 APP_NOTE = "dev en cours"
 
 
@@ -1536,6 +1536,11 @@ def manual_add():
     # 🔥 retour à la recherche
     return redirect(f"/?q={title}")
     
+    @app.route("/force_restore")
+    def force_restore():
+        print("🔥 RESTORE FORCÉ")
+        restore_db()
+        return "RESTORE DONE"
 
     
 if __name__ == "__main__":
