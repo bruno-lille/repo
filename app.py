@@ -12,7 +12,7 @@ FLAG_PATH = os.path.join(BASE_DIR, "no_cleanup.flag")
 DB_PATH = os.path.join(BASE_DIR, "films.db")
 TMP_PATH = os.path.join(BASE_DIR, "backup_temp.db")
 
-NO_CLEANUP = False
+
 
 ENV = os.getenv("ENV", "DEV")
 
@@ -39,7 +39,7 @@ nav_buttons = """
 """
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-04-29_13-01-20"
+APP_BUILD = "2026-05-01_17-58-46"
 APP_NOTE = "dev en cours"
 
 
@@ -1348,12 +1348,12 @@ def backup_db():
 
         print(f"✅ Backup créé : {filename}")
         
-        global NO_CLEANUP
-
-        if NO_CLEANUP:
+        if os.path.exists(FLAG_PATH):
             print("⚠️ Cleanup désactivé (import récent)")
-            NO_CLEANUP = False
+            os.remove(FLAG_PATH)
             return f"Backup OK → {backup_status}"
+        
+
 
         # ==================================================
         # 🧠 NETTOYAGE INTELLIGENT
@@ -1529,8 +1529,8 @@ def manual_add():
 #--------Flag test temporaire---------
 @app.route("/test_flag")
 def test_flag():
-    global NO_CLEANUP
-    NO_CLEANUP = True
+    with open(FLAG_PATH, "w") as f:
+        f.write("1")
     return "FLAG CREATED"
     
 if __name__ == "__main__":
