@@ -62,7 +62,7 @@ nav_buttons = """
 """
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-05-02_12-41-56"
+APP_BUILD = "2026-05-02_13-41-40"
 APP_NOTE = "dev en cours"
 
 
@@ -1437,7 +1437,6 @@ def backup_db():
             
 
         # 🔥 TRI
-        from datetime import datetime
 
         def extract_date(f):
             try:
