@@ -6,13 +6,15 @@ import requests
 import urllib.parse
 import unicodedata
 import re
+import time
+from datetime import datetime
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 FLAG_PATH = os.path.join(BASE_DIR, "no_cleanup.flag")
 DB_PATH = os.path.join(BASE_DIR, "films.db")
 TMP_PATH = os.path.join(BASE_DIR, "backup_temp.db")
 
-import time
+
 
 CLEANUP_FILE = os.path.join(BASE_DIR, "last_cleanup.txt")
 
@@ -23,8 +25,8 @@ def should_cleanup():
     try:
         with open(CLEANUP_FILE, "r") as f:
             last = float(f.read())
-    except:
-        return True  # sécurité
+    except Exception:
+        return True
 
     return time.time() - last > 3600
 
@@ -60,7 +62,7 @@ nav_buttons = """
 """
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-05-02_12-24-00"
+APP_BUILD = "2026-05-02_12-41-56"
 APP_NOTE = "dev en cours"
 
 
@@ -1329,7 +1331,7 @@ def backup_db():
     import requests
     import sqlite3
     import shutil
-    from datetime import datetime
+#    from datetime import datetime
 
     print("STEP 1: start backup")
 
@@ -1427,13 +1429,24 @@ def backup_db():
         
         # 🧠 ANTI-SPAM CLEANUP
         if not should_cleanup():
-            print("⏱️ Cleanup ignoré (trop récent)")
+            print("⏱️ Cleanup ignoré (moins de 1h)")
             return f"Backup OK → {backup_status}"
-
-
+            
+        print("🧠 Cleanup autorisé → lancement (timestamp enregistré)")
+        mark_cleanup()
+            
 
         # 🔥 TRI
-        db_files_sorted = sorted(db_files, key=lambda x: x["name"], reverse=True)
+        from datetime import datetime
+
+        def extract_date(f):
+            try:
+                name = f["name"].replace("films_", "").replace(".db", "")
+                return datetime.strptime(name, "%Y-%m-%d_%H-%M-%S")
+            except Exception:
+                return datetime.min
+
+        db_files_sorted = sorted(db_files, key=extract_date, reverse=True)
 
         KEEP = 20
 
@@ -1460,7 +1473,7 @@ def backup_db():
 
         print("STEP FINAL: success")
         
-        mark_cleanup()
+#        mark_cleanup()
 
         return f"Backup OK → {backup_status}"
 
@@ -1530,11 +1543,11 @@ def manual_add():
     # 🔥 retour à la recherche
     return redirect(f"/?q={title}")
     
-    @app.route("/force_restore")
-    def force_restore():
-        print("🔥 RESTORE FORCÉ")
-        restore_db()
-        return "RESTORE DONE"
+@app.route("/force_restore")
+def force_restore():
+    print("🔥 RESTORE FORCÉ")
+    restore_db()
+    return "RESTORE DONE"
 
     
 if __name__ == "__main__":
