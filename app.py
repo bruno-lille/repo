@@ -108,7 +108,7 @@ def init_app():
 
             # data = r.json()
 
-            🔐 sécurisation accès date
+            # 🔐 sécurisation accès date
             # date = data.get("committer", {}).get("date")
 
             # if not date:
@@ -141,7 +141,7 @@ def init_app():
             # "Authorization": f"token {token}"
         # }
 
-        📥 récupérer les backups
+        # 📥 récupérer les backups
         # url = f"https://api.github.com/repos/{repo}/contents/backups"
         # r = requests.get(url, headers=headers, timeout=5)
 
@@ -151,7 +151,7 @@ def init_app():
 
         # files = r.json()
 
-        🔥 garder uniquement les .db
+        # 🔥 garder uniquement les .db
         # db_files = [f for f in files if f["name"].endswith(".db")]
 
         # if not db_files:
@@ -168,7 +168,7 @@ def init_app():
             # print("❌ Erreur téléchargement DB")
             # return
 
-        🔐 sécurité : ne pas écraser une DB valide
+        # 🔐 sécurité : ne pas écraser une DB valide
         # if os.path.exists(DB_PATH):
             # size = os.path.getsize(DB_PATH)
 
@@ -176,19 +176,19 @@ def init_app():
                 # print("⚠️ DB locale déjà valide → restore ignoré")
                 # return
 
-        💾 écriture directe (PAS de vérification locale)
+        # 💾 écriture directe (PAS de vérification locale)
         # tmp_restore = DB_PATH + ".restore"
 
         # with open(tmp_restore, "wb") as f:
             # f.write(r.content)
 
-        🔍 vérification taille minimale
+        # 🔍 vérification taille minimale
         # if os.path.getsize(tmp_restore) < 1000:
             # print("❌ Restore invalide (fichier trop petit)")
             # os.remove(tmp_restore)
             # return
 
-        🔥 remplacement sécurisé
+        # 🔥 remplacement sécurisé
         # os.replace(tmp_restore, DB_PATH)
 
         # print(f"✅ DB restaurée : {latest['name']}")
@@ -580,7 +580,7 @@ nav_buttons = """
 app = Flask(__name__)
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-05-02_20-23-09"
+APP_BUILD = "2026-05-02_20-35-59"
 APP_NOTE = "dev en cours"
 
 
@@ -1423,17 +1423,17 @@ def backup_db():
     # print("STEP 2: DB found")
 
     # try:
-        🔥 1. Sécuriser SQLite
+        # 🔥 1. Sécuriser SQLite
         # conn = sqlite3.connect(DB_PATH)
         # conn.commit()
         # conn.execute("PRAGMA wal_checkpoint(FULL);")
         # conn.close()
 
-        🔥 2. Copier version stable
+        # 🔥 2. Copier version stable
         # shutil.copyfile(DB_PATH, TMP_PATH)
         # print("STEP 3: DB copied")
 
-        🔥 3. Lire copie
+        # 🔥 3. Lire copie
         # with open(TMP_PATH, "rb") as f:
             # raw = f.read()
 
@@ -1444,7 +1444,7 @@ def backup_db():
 
         # content = base64.b64encode(raw).decode()
 
-        🔥 4. Upload GitHub
+        # 🔥 4. Upload GitHub
         # now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         # filename = f"backups/films_{now}.db"
 
@@ -1467,7 +1467,7 @@ def backup_db():
         # print(f"✅ Backup créé : {filename}")
         
         
-        🔥 sécurité import
+        # 🔥 sécurité import
         # if os.path.exists(FLAG_PATH):
             # print("⚠️ Cleanup désactivé (import récent)")
             # os.remove(FLAG_PATH)
@@ -1475,9 +1475,9 @@ def backup_db():
         
 
 
-        ==================================================
-        🧠 NETTOYAGE INTELLIGENT
-        ==================================================
+        # ==================================================
+        # 🧠 NETTOYAGE INTELLIGENT
+        # ==================================================
         
         
 
@@ -1500,7 +1500,7 @@ def backup_db():
 
         # print("STEP 8: db_files =", len(db_files))
         
-        🧠 ANTI-SPAM CLEANUP
+        # 🧠 ANTI-SPAM CLEANUP
         # if not should_cleanup():
             # print("⏱️ Cleanup ignoré (moins de 1h)")
             # return f"Backup OK → {backup_status}"
@@ -1509,7 +1509,7 @@ def backup_db():
         # mark_cleanup()
             
 
-        🔥 TRI
+        # 🔥 TRI
 
         # def extract_date(f):
             # try:
