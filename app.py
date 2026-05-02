@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*-
+#⚙️ 🟢 FONDATIONS
+#01--IMPORTS CORE
 
 import os
 import base64
@@ -9,14 +10,52 @@ import re
 import time
 from datetime import datetime
 
+#02--IMPORTS WEB
+from flask import Flask, request, redirect
+
+#03--CONFIG GLOBALE
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 FLAG_PATH = os.path.join(BASE_DIR, "no_cleanup.flag")
 DB_PATH = os.path.join(BASE_DIR, "films.db")
 TMP_PATH = os.path.join(BASE_DIR, "backup_temp.db")
-
-
-
 CLEANUP_FILE = os.path.join(BASE_DIR, "last_cleanup.txt")
+
+COL = {
+    "EMPLACEMENT": 1,
+    "TYPE": 3,
+    "DISC_ID": 5,   # ✅ colonne E
+    "TITRE": 6,
+    "ALLOCINE": 7,
+    "TMDB_ID": 13,
+    "JAQUETTE": 14,
+    "ANNEE": 15,
+    "GENRES": 16,
+    "RESUME": 17,
+    "CASTING": 18,
+    "ORDRE": 11
+}
+
+#04 — ENV / TOKENS
+
+ENV = os.getenv("ENV", "DEV")
+TMDB_API_KEY = os.getenv("TMDB_API_KEY")
+
+
+
+
+#🔐 🟡 GITHUB / BACKUP CORE
+#05 — GITHUB UTILS
+
+def get_github_token():
+    token = os.getenv("GITHUB_TOKEN")
+    if not token:
+        print("❌ GITHUB_TOKEN manquant")
+    return token
+    
+GITHUB_TOKEN = get_github_token()
+
+#06 — CLEANUP LOGIC
 
 def should_cleanup():
     if not os.path.exists(CLEANUP_FILE):
@@ -34,80 +73,9 @@ def should_cleanup():
 def mark_cleanup():
     with open(CLEANUP_FILE, "w") as f:
         f.write(str(time.time()))
+        
+#07 — RESTORE DB
 
-
-
-ENV = os.getenv("ENV", "DEV")
-
-def get_github_token():
-    token = os.getenv("GITHUB_TOKEN")
-    if not token:
-        print("❌ GITHUB_TOKEN manquant")
-    return token
-
-GITHUB_TOKEN = get_github_token()
-
-from flask import Flask, request, redirect
-
-# 🔥 CRÉATION APP (OBLIGATOIRE)
-app = Flask(__name__)
-
-nav_buttons = """
-<div class="card">
-    <div class="btn-row">
-        <a class="btn retour" href="javascript:history.back()">⬅️ Retour</a>
-        <a class="btn new" href="/">❌ Annuler</a>
-    </div>
-</div>
-"""
-
-APP_VERSION = "V1-dev"
-APP_BUILD = "2026-05-02_13-41-40"
-APP_NOTE = "dev en cours"
-
-
-
-
-
-
-
-
-# 🔄 Cache mémoire
-DATA = None
-
-def reset_cache():
-    global DATA
-    DATA = None
-    
-
-     
-#------------FONCTION SQL------------
-
-def search_films_sql(query, exact_mode=False):
-    import sqlite3
-
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
-
-    q = query.lower()
-
-    if exact_mode:
-        cursor.execute(
-            "SELECT * FROM films WHERE LOWER(titre) = ?",
-            (q,)
-        )
-    else:
-        cursor.execute("SELECT * FROM films")
-
-    results = cursor.fetchall()
-    conn.close()
-
-    return results
-
-
-
-# 🔁 RESTORE DB DEPUIS GITHUB (VERSION SAFE)
 def get_latest_backup(files, headers):
 
     latest_file = None
@@ -224,31 +192,35 @@ def init_app():
 
     else:
         print("🧪 Mode DEV → pas de restore")
+        
+#💾 🔵 DATABASE
+#08 — SQL CORE
+#Ancien03------------FONCTION SQL------------
 
+def search_films_sql(query, exact_mode=False):
+    import sqlite3
 
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
 
+    q = query.lower()
 
-TMDB_API_KEY = os.getenv("TMDB_API_KEY")
+    if exact_mode:
+        cursor.execute(
+            "SELECT * FROM films WHERE LOWER(titre) = ?",
+            (q,)
+        )
+    else:
+        cursor.execute("SELECT * FROM films")
 
+    results = cursor.fetchall()
+    conn.close()
 
+    return results
+    
+#09 — LOAD DATA
 
-
-COL = {
-    "EMPLACEMENT": 1,
-    "TYPE": 3,
-    "DISC_ID": 5,   # ✅ colonne E
-    "TITRE": 6,
-    "ALLOCINE": 7,
-    "TMDB_ID": 13,
-    "JAQUETTE": 14,
-    "ANNEE": 15,
-    "GENRES": 16,
-    "RESUME": 17,
-    "CASTING": 18,
-    "ORDRE": 11
-}
-
-# ----------- CHARGEMENT SQL LIGHT -----------
 def load_data():
     import sqlite3
 
@@ -288,6 +260,8 @@ def load_data():
 
     return titres, liens, col_A, col_C, tmdb_ids, jaquettes, annees, genres, resumes, casting, disc_ids, ordres
     
+DATA = None
+    
 def load_data_cached():
     global DATA
 
@@ -295,13 +269,10 @@ def load_data_cached():
         DATA = load_data()
 
     return DATA
+    
+#🌐 🟣 API EXTERNES
+#10 — TMDB SEARCH
 
-
-def short_text(text, max_len=140):
-    return text if len(text) <= max_len else text[:max_len] + "..."
-
-      
-        
 def search_tmdb_multi(query):
     print("TMDB KEY:", TMDB_API_KEY)
     print("QUERY:", query)
@@ -355,10 +326,9 @@ def search_tmdb_multi(query):
     )
 
     return sorted_results[:5]
-
-# ----------- EXTRACTION ID TMDB -----------
-
     
+#11 — TMDB HELPERS
+
 def extract_tmdb_id(value):
 
     value = value.strip()
@@ -374,6 +344,51 @@ def extract_tmdb_id(value):
 
     return None
     
+#🧰 🟠 UTILITAIRES
+#12 — NORMALISATION
+
+def normalize(text):
+    if not text:
+        return ""
+
+    text = text.lower()
+    text = unicodedata.normalize("NFD", text)
+    text = "".join(c for c in text if unicodedata.category(c) != "Mn")
+
+    text = re.sub(r'[^a-z0-9]', '', text)
+
+    return text
+    
+def normalize_words(text):
+    if not text:
+        return []
+
+    text = text.lower()
+    text = unicodedata.normalize("NFD", text)
+    text = "".join(c for c in text if unicodedata.category(c) != "Mn")
+
+    # garder les mots séparés
+    words = re.findall(r'\b[a-z0-9]+\b', text)
+
+    return words
+    
+#13 — UTILS GENERIQUES
+
+def short_text(text, max_len=140):
+    return text if len(text) <= max_len else text[:max_len] + "..."
+    
+def safe_int(val, default=0):
+    try:
+        return int(val)
+    except:
+        return default
+        
+
+        
+#14 — EXCEL UTILS
+#ancien06 ----------- EXTRACTION ID TMDB -----------
+
+
 def generate_disc_id(ws):
 
     max_id = 0
@@ -403,9 +418,13 @@ def find_row_by_disc_id(ws, disc_id):
             return idx
 
     return None
+    
 
 
-# ----------- STYLE GLOBAL -----------
+        
+#🎨 ⚪ UI / FRONT
+#15 — STYLE
+
 def get_style():
     return """
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -527,42 +546,39 @@ def get_style():
     .retour {background:#444; color:white;}
     </style>
     """
-#-----------Appli---------------
+
+#16 - composants UI réutilisables
+nav_buttons = """
+<div class="card">
+    <div class="btn-row">
+        <a class="btn retour" href="javascript:history.back()">⬅️ Retour</a>
+        <a class="btn new" href="/">❌ Annuler</a>
+    </div>
+</div>
+"""
+
+
+#🚀 🔴 APP FLASK
+#17 — INIT APP
+
+app = Flask(__name__)
+
+APP_VERSION = "V1-dev"
+APP_BUILD = "2026-05-02_18-16-19"
+APP_NOTE = "dev en cours"
 
 
 
-def normalize(text):
-    if not text:
-        return ""
+#18 — CACHE reset
 
-    text = text.lower()
-    text = unicodedata.normalize("NFD", text)
-    text = "".join(c for c in text if unicodedata.category(c) != "Mn")
 
-    text = re.sub(r'[^a-z0-9]', '', text)
 
-    return text
-    
-def normalize_words(text):
-    if not text:
-        return []
-
-    text = text.lower()
-    text = unicodedata.normalize("NFD", text)
-    text = "".join(c for c in text if unicodedata.category(c) != "Mn")
-
-    # garder les mots séparés
-    words = re.findall(r'\b[a-z0-9]+\b', text)
-
-    return words
-       
-def safe_int(val, default=0):
-    try:
-        return int(val)
-    except:
-        return default
-
-# ----------- HOME -----------
+def reset_cache():
+    global DATA
+    DATA = None
+  
+#🔍 🟢 ROUTES PRINCIPALES  
+#19 — HOME
 @app.route("/", methods=["GET"])
 def home():
 
@@ -819,11 +835,64 @@ def home():
 
     bloc += nav_buttons
     return html + bloc
+    
+#20 — COUNT
+@app.route("/count")
+def count():
 
+    query_raw = request.args.get("q", "").strip()
 
- 
+    if not query_raw:
+        return "0"
 
-# ----------- PAGE CORRECTION -----------
+    # 🔥 gestion mode exact (parenthèses)
+    exact_mode = False
+    if query_raw.startswith("(") and query_raw.endswith(")"):
+        exact_mode = True
+        query = query_raw[1:-1].strip()
+    else:
+        query = query_raw
+
+    # 🔥 récupération des données
+    rows = search_films_sql(query, exact_mode)
+    results = list(rows)
+
+    # 🔥 fallback large
+    if not results:
+        rows = search_films_sql("", False)
+        results = list(rows)
+
+    # 🔥 NORMALISATION IDENTIQUE À home()
+    q_norm = normalize(query)
+    q_words = [normalize(w) for w in query.lower().split()]
+
+    filtered = []
+
+    for row in results:
+
+        titre_norm = normalize(row["titre"])
+
+        # 🔥 mode exact
+        if exact_mode:
+            if titre_norm == q_norm:
+                filtered.append(row)
+            continue
+
+        # 🔥 multi-mots intelligent
+        match = True
+        for q in q_words:
+            if q not in titre_norm:
+                match = False
+                break
+
+        if match:
+            filtered.append(row)
+
+    return str(len(filtered))
+    
+#✏️ 🟡 GESTION FILMS
+#21 — SUGGEST UPDATE
+#ancien10 ----------- PAGE CORRECTION -----------
 @app.route("/suggest_update/<disc_id>")
 def suggest_update(disc_id):
 
@@ -921,9 +990,8 @@ def suggest_update(disc_id):
         
 
     return html
-
-
-# ----------- UPDATE AUTO -----------
+    
+#22 — UPDATE AUTO
 @app.route("/confirm_update/<disc_id>/<int:tmdb_id>")
 def confirm_update(disc_id, tmdb_id, query=""):
 
@@ -963,10 +1031,8 @@ def confirm_update(disc_id, tmdb_id, query=""):
 
     query = request.args.get("q", "")
     return redirect(f"/?q={query}")
-
-
-
-# ----------- UPDATE MANUEL (ID OU URL) -----------
+    
+#23 — UPDATE MANUEL
 @app.route("/manual_update/<disc_id>", methods=["POST"])
 def manual_update(disc_id):
 
@@ -1030,9 +1096,9 @@ def manual_update(disc_id):
 
     
     return redirect(f"/?q={query}")
-
-
-# ----------- PAGE AJOUT FILM -----------
+    
+#24 — ADD FILM
+#ancien13 ----------- PAGE AJOUT FILM -----------
 @app.route("/add/<int:tmdb_id>")
 def add_movie(tmdb_id):
 
@@ -1108,8 +1174,7 @@ def add_movie(tmdb_id):
     </div>
     """
             
-
-# ----------- CONFIRM ADD -----------
+#25 — CONFIRM ADD
 @app.route("/confirm_add", methods=["POST"])
 def confirm_add():
 
@@ -1161,8 +1226,7 @@ def confirm_add():
     </div>
     """
     
-# ----------- suppression ligne -----------
-
+#26 — DELETE
 @app.route("/delete/<disc_id>")
 def delete_movie(disc_id):
 
@@ -1187,65 +1251,8 @@ def delete_movie(disc_id):
         <a href="/" style="font-size:20px;">⬅️ Retour</a>
     </div>
     """
-#------------COMPTEUR--------------
-
-
-@app.route("/count")
-def count():
-
-    query_raw = request.args.get("q", "").strip()
-
-    if not query_raw:
-        return "0"
-
-    # 🔥 gestion mode exact (parenthèses)
-    exact_mode = False
-    if query_raw.startswith("(") and query_raw.endswith(")"):
-        exact_mode = True
-        query = query_raw[1:-1].strip()
-    else:
-        query = query_raw
-
-    # 🔥 récupération des données
-    rows = search_films_sql(query, exact_mode)
-    results = list(rows)
-
-    # 🔥 fallback large
-    if not results:
-        rows = search_films_sql("", False)
-        results = list(rows)
-
-    # 🔥 NORMALISATION IDENTIQUE À home()
-    q_norm = normalize(query)
-    q_words = [normalize(w) for w in query.lower().split()]
-
-    filtered = []
-
-    for row in results:
-
-        titre_norm = normalize(row["titre"])
-
-        # 🔥 mode exact
-        if exact_mode:
-            if titre_norm == q_norm:
-                filtered.append(row)
-            continue
-
-        # 🔥 multi-mots intelligent
-        match = True
-        for q in q_words:
-            if q not in titre_norm:
-                match = False
-                break
-
-        if match:
-            filtered.append(row)
-
-    return str(len(filtered))
     
-    #----------Tout Automatique------------
-    
-
+#27 — PREFILL
 @app.route("/prefill/<disc_id>/<int:tmdb_id>")
 def prefill(disc_id, tmdb_id):
 
@@ -1319,8 +1326,53 @@ def prefill(disc_id, tmdb_id):
         </form>
     </div>
     """
-#-------------SAUVEGARDE VERS GITHUB----------------
+    
+#28 — MANUAL ADD
+#ancien20---------Ajout Nanuel fiche vide------------------
+@app.route("/manual_add", methods=["POST"])
+def manual_add():
 
+    title = request.form.get("title")
+    emplacement = request.form.get("emplacement")
+    type_disc = request.form.get("type")
+    allocine = request.form.get("allocine")
+    tmdb_input = request.form.get("tmdb_input", "").strip()
+
+    # 🔥 nettoyage TMDB ID
+    import re
+    tmdb_id = ""
+
+    if tmdb_input.isdigit():
+        tmdb_id = tmdb_input
+    elif "themoviedb.org" in tmdb_input:
+        match = re.search(r"/movie/(\\d+)", tmdb_input)
+        if match:
+            tmdb_id = match.group(1)
+
+    import sqlite3
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    # 🔥 génération disc_id automatique
+    cursor.execute("SELECT MAX(id) FROM films")
+    last_id = cursor.fetchone()[0] or 0
+    next_id = last_id + 1
+    disc_id = f"DISC-{next_id:05d}"
+
+    # 🔥 INSERT COMPLET
+    cursor.execute("""
+        INSERT INTO films (disc_id, titre, emplacement, type, allocine, tmdb_id)
+        VALUES (?, ?, ?, ?, ?, ?)
+    """, (disc_id, title, emplacement, type_disc, allocine, tmdb_id))
+
+    conn.commit()
+    conn.close()
+
+    # 🔥 retour à la recherche
+    return redirect(f"/?q={title}")
+    
+#🔁 🔵 SYSTÈME / INFRA
+#29 — BACKUP
 @app.route("/backup_db", methods=["GET", "HEAD"])
 def backup_db():
     
@@ -1331,7 +1383,7 @@ def backup_db():
     import requests
     import sqlite3
     import shutil
-#    from datetime import datetime
+
 
     print("STEP 1: start backup")
 
@@ -1472,7 +1524,6 @@ def backup_db():
 
         print("STEP FINAL: success")
         
-#        mark_cleanup()
 
         return f"Backup OK → {backup_status}"
 
@@ -1484,71 +1535,28 @@ def backup_db():
         if os.path.exists(TMP_PATH):
             os.remove(TMP_PATH)
             
-#----------nouvelle route---------
-
+#30 — HEALTH
 @app.route("/health")
 def health():
     return "OK", 200
     
-    
+#31 — STARTUP
 @app.before_request
 def startup():
     if not hasattr(app, "initialized"):
         init_app()
         app.initialized = True
-    
-    
-#---------Ajout Nanuel fiche vide------------------
-
-@app.route("/manual_add", methods=["POST"])
-def manual_add():
-
-    title = request.form.get("title")
-    emplacement = request.form.get("emplacement")
-    type_disc = request.form.get("type")
-    allocine = request.form.get("allocine")
-    tmdb_input = request.form.get("tmdb_input", "").strip()
-
-    # 🔥 nettoyage TMDB ID
-    import re
-    tmdb_id = ""
-
-    if tmdb_input.isdigit():
-        tmdb_id = tmdb_input
-    elif "themoviedb.org" in tmdb_input:
-        match = re.search(r"/movie/(\\d+)", tmdb_input)
-        if match:
-            tmdb_id = match.group(1)
-
-    import sqlite3
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-
-    # 🔥 génération disc_id automatique
-    cursor.execute("SELECT MAX(id) FROM films")
-    last_id = cursor.fetchone()[0] or 0
-    next_id = last_id + 1
-    disc_id = f"DISC-{next_id:05d}"
-
-    # 🔥 INSERT COMPLET
-    cursor.execute("""
-        INSERT INTO films (disc_id, titre, emplacement, type, allocine, tmdb_id)
-        VALUES (?, ?, ?, ?, ?, ?)
-    """, (disc_id, title, emplacement, type_disc, allocine, tmdb_id))
-
-    conn.commit()
-    conn.close()
-
-    # 🔥 retour à la recherche
-    return redirect(f"/?q={title}")
-    
+        
+#32 — ADMIN
 @app.route("/force_restore")
 def force_restore():
     print("🔥 RESTORE FORCÉ")
     restore_db()
     return "RESTORE DONE"
-
     
+#33 — RUN
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+    
