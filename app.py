@@ -60,7 +60,7 @@ nav_buttons = """
 """
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-05-01_20-07-42"
+APP_BUILD = "2026-05-02_12-24-00"
 APP_NOTE = "dev en cours"
 
 
@@ -1391,6 +1391,8 @@ def backup_db():
 
         print(f"✅ Backup créé : {filename}")
         
+        
+        # 🔥 sécurité import
         if os.path.exists(FLAG_PATH):
             print("⚠️ Cleanup désactivé (import récent)")
             os.remove(FLAG_PATH)
@@ -1402,11 +1404,7 @@ def backup_db():
         # 🧠 NETTOYAGE INTELLIGENT
         # ==================================================
         
-        # 🔥 sécurité import
-        if os.path.exists(FLAG_PATH):
-            print("⚠️ Cleanup désactivé (import récent)")
-            os.remove(FLAG_PATH)
-            return f"Backup OK → {backup_status}"
+        
 
         print("STEP 6: listing backups")
 
@@ -1432,7 +1430,7 @@ def backup_db():
             print("⏱️ Cleanup ignoré (trop récent)")
             return f"Backup OK → {backup_status}"
 
-        mark_cleanup()
+
 
         # 🔥 TRI
         db_files_sorted = sorted(db_files, key=lambda x: x["name"], reverse=True)
@@ -1461,6 +1459,8 @@ def backup_db():
                 print("❌ DELETE ERROR:", f["name"], e)
 
         print("STEP FINAL: success")
+        
+        mark_cleanup()
 
         return f"Backup OK → {backup_status}"
 
