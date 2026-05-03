@@ -593,7 +593,7 @@ nav_buttons = """
 app = Flask(__name__)
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-05-03_17-45-52"
+APP_BUILD = "2026-05-03_18-02-26"
 APP_NOTE = "dev en cours"
 
 
@@ -651,16 +651,16 @@ def home():
         
         <div style="
             position:fixed;
-            top:30px;
+            bottom:20px;
             right:10px;
             font-size:12px;
             color:#aaa;
             background:#222;
-            padding:4px 8px;
-            border-radius:6px;
+            padding:6px 10px;
+            border-radius:8px;
             z-index:9999;
         ">
-            🕒 Dernier backup : {get_last_backup_delay()}
+            🕒 {get_last_backup_delay()}
         </div>
 
         <h1>🎬 Ma vidéothèque</h1>
@@ -682,7 +682,15 @@ def home():
    
         """
         html += """
-        <div style="margin-top:40px;">
+        <div style="
+            position:fixed;
+            bottom:20px;
+            left:50%;
+            transform:translateX(-50%);
+            width:90%;
+            max-width:420px;
+            z-index:999;
+        ">
             <div class="card">
                 <a class="btn allocine" href="/download_all">
                     💾 Télécharger Films
@@ -1597,6 +1605,9 @@ def backup_db():
 #29B — DOWNLOAD DB
 @app.route("/download_db")
 def download_db():
+    
+    if ENV != "DEV":
+        return "⛔ accès interdit"
 
     from flask import send_file
 
@@ -1615,6 +1626,9 @@ def download_db():
 #29C — DOWNLOAD EXCEL
 @app.route("/download_excel")
 def download_excel():
+    
+    if ENV != "DEV":
+        return "⛔ accès interdit"
 
     import sqlite3
     from flask import send_file
