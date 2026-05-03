@@ -198,7 +198,9 @@ def restore_db():
 
 def init_app():
     if ENV == "PROD":
-        print("🌐  Mode PROD → restore désactivé temporairement"")
+        print("🌐 Mode PROD → restore désactivé temporairement")
+    else:
+        print("🧪 Mode DEV → pas de restore")
 
         # if not os.path.exists(DB_PATH):
             # print("📥 DB absente → restauration GitHub")
@@ -580,7 +582,7 @@ nav_buttons = """
 app = Flask(__name__)
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-05-03_13-42-32"
+APP_BUILD = "2026-05-03_13-45-50"
 APP_NOTE = "dev en cours"
 
 
