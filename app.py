@@ -458,16 +458,7 @@ def get_style():
     return """
     <meta name="viewport" content="width=device-width, initial-scale=1">
     
-    <script>
-    function downloadZip() {
-        const link = document.createElement("a");
-        link.href = "/download_all";
-        link.target = "_blank";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    }
-    </script>
+  
     
     <script>
     function updateCount() {
@@ -603,7 +594,7 @@ nav_buttons = """
 app = Flask(__name__)
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-05-03_18-37-14"
+APP_BUILD = "2026-05-03_18-42-56"
 APP_NOTE = "dev en cours"
 
 
@@ -702,7 +693,7 @@ def home():
             z-index:999;
         ">
             <div class="card">
-                <a class="btn allocine" href="#" onclick="downloadZip()">
+                <a class="btn allocine" href="/download_all">
                     💾 Télécharger Films
                 </a>
             </div>
