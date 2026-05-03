@@ -9,6 +9,7 @@ import unicodedata
 import re
 import time
 from datetime import datetime
+from openpyxl import Workbook
 
 #02--IMPORTS WEB
 from flask import Flask, request, redirect, send_file
@@ -564,7 +565,7 @@ nav_buttons = """
 app = Flask(__name__)
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-05-03_16-32-40"
+APP_BUILD = "2026-05-03_16-55-36"
 APP_NOTE = "dev en cours"
 
 
@@ -640,7 +641,12 @@ def home():
         
         <div class="card">
             <a class="btn allocine" href="/download_db">
-                💾 Télécharger la base
+                💾 Télécharger Films.db
+            </a>
+        </div>
+        <div class="card">
+            <a class="btn allocine" href="/download_excel">
+                📊 Télécharger Films.xlsx
             </a>
         </div>
         
@@ -1552,14 +1558,61 @@ def backup_db():
 @app.route("/download_db")
 def download_db():
 
+    from flask import send_file
+
     if not os.path.exists(DB_PATH):
         return "❌ DB introuvable"
+
+    now = datetime.now().strftime("%y-%m-%d_%H-%M-%S")
+    filename = f"Films_{now}.db"
 
     return send_file(
         DB_PATH,
         as_attachment=True,
-        download_name="films_backup.db"
+        download_name=filename
     )
+    
+#29C — DOWNLOAD EXCEL
+@app.route("/download_excel")
+def download_excel():
+
+    import sqlite3
+    from flask import send_file
+
+    if not os.path.exists(DB_PATH):
+        return "❌ DB introuvable"
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM films")
+    rows = cursor.fetchall()
+
+    # 🔥 Excel
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Films"
+
+    headers = [desc[0] for desc in cursor.description]
+    ws.append(headers)
+
+    for row in rows:
+        ws.append(row)
+
+    conn.close()
+
+    # 🔥 horodatage
+    now = datetime.now().strftime("%y-%m-%d_%H-%M-%S")
+    filename = f"Films_{now}.xlsx"
+
+    file_path = os.path.join(BASE_DIR, filename)
+    wb.save(file_path)
+
+    return send_file(
+        file_path,
+        as_attachment=True,
+        download_name=filename
+    ))
             
 #30 — HEALTH
 @app.route("/health")
