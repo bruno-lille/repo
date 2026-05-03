@@ -86,11 +86,11 @@ def mark_cleanup():
         
 #07 — RESTORE DB
 
-def restore_db():
-    print("⛔ RESTORE désactivé")
+# def restore_db():
+    # print("⛔ RESTORE désactivé")
     
-def init_app():
-    print("🚀 App init (mode sans restore)")
+# def init_app():
+    # print("🚀 App init (mode sans restore)")
 
 # def get_latest_backup(files, headers):
 
@@ -108,7 +108,7 @@ def init_app():
 
             # data = r.json()
 
-            # 🔐 sécurisation accès date
+            🔐 sécurisation accès date
             # date = data.get("committer", {}).get("date")
 
             # if not date:
@@ -125,80 +125,80 @@ def init_app():
     # return latest_file
 
 
-# def restore_db():
+def restore_db():
     
-    # print("🔥 RESTORE déclenché")
+    print("🔥 RESTORE déclenché")
 
-    # try:
-        # token = GITHUB_TOKEN
-        # repo = "bruno-lille/repo"
+    try:
+        token = GITHUB_TOKEN
+        repo = "bruno-lille/repo"
 
-        # if not token or not repo:
-            # print("❌ Variables GitHub manquantes")
-            # return
+        if not token or not repo:
+            print("❌ Variables GitHub manquantes")
+            return
 
-        # headers = {
-            # "Authorization": f"token {token}"
-        # }
+        headers = {
+            "Authorization": f"token {token}"
+        }
 
         # 📥 récupérer les backups
-        # url = f"https://api.github.com/repos/{repo}/contents/backups"
-        # r = requests.get(url, headers=headers, timeout=5)
+        url = f"https://api.github.com/repos/{repo}/contents/backups"
+        r = requests.get(url, headers=headers, timeout=5)
 
-        # if r.status_code != 200:
-            # print("❌ Impossible de récupérer les backups")
-            # return
+        if r.status_code != 200:
+            print("❌ Impossible de récupérer les backups")
+            return
 
-        # files = r.json()
+        files = r.json()
 
         # 🔥 garder uniquement les .db
-        # db_files = [f for f in files if f["name"].endswith(".db")]
+        db_files = [f for f in files if f["name"].endswith(".db")]
 
-        # if not db_files:
-            # print("❌ Aucun backup .db trouvé")
-            # return
+        if not db_files:
+            print("❌ Aucun backup .db trouvé")
+            return
 
-        # latest = sorted(db_files, key=lambda x: x["name"], reverse=True)[0]
+        latest = sorted(db_files, key=lambda x: x["name"], reverse=True)[0]
 
-        # download_url = latest["download_url"]
+        download_url = latest["download_url"]
 
-        # r = requests.get(download_url, timeout=5)
+        r = requests.get(download_url, timeout=5)
 
-        # if r.status_code != 200:
-            # print("❌ Erreur téléchargement DB")
-            # return
+        if r.status_code != 200:
+            print("❌ Erreur téléchargement DB")
+            return
 
         # 🔐 sécurité : ne pas écraser une DB valide
-        # if os.path.exists(DB_PATH):
-            # size = os.path.getsize(DB_PATH)
+        if os.path.exists(DB_PATH):
+            size = os.path.getsize(DB_PATH)
 
-            # if size > 10000:  # seuil simple (DB valide)
-                # print("⚠️ DB locale déjà valide → restore ignoré")
-                # return
+            if size > 10000:  # seuil simple (DB valide)
+                print("⚠️ DB locale déjà valide → restore ignoré")
+                return
 
         # 💾 écriture directe (PAS de vérification locale)
-        # tmp_restore = DB_PATH + ".restore"
+        tmp_restore = DB_PATH + ".restore"
 
-        # with open(tmp_restore, "wb") as f:
-            # f.write(r.content)
+        with open(tmp_restore, "wb") as f:
+            f.write(r.content)
 
         # 🔍 vérification taille minimale
-        # if os.path.getsize(tmp_restore) < 1000:
-            # print("❌ Restore invalide (fichier trop petit)")
-            # os.remove(tmp_restore)
-            # return
+        if os.path.getsize(tmp_restore) < 1000:
+            print("❌ Restore invalide (fichier trop petit)")
+            os.remove(tmp_restore)
+            return
 
         # 🔥 remplacement sécurisé
-        # os.replace(tmp_restore, DB_PATH)
+        os.replace(tmp_restore, DB_PATH)
 
-        # print(f"✅ DB restaurée : {latest['name']}")
+        print(f"✅ DB restaurée : {latest['name']}")
 
-    # except Exception as e:
-        # print("❌ ERREUR RESTORE :", e)
+    except Exception as e:
+        print("❌ ERREUR RESTORE :", e)
 
-# def init_app():
-    # if ENV == "PROD":
-        # print("🌐 Mode PROD → vérification DB")
+def init_app():
+    if ENV == "PROD":
+        print("🌐  Mode PROD → restore désactivé temporairement"")
 
         # if not os.path.exists(DB_PATH):
             # print("📥 DB absente → restauration GitHub")
@@ -580,7 +580,7 @@ nav_buttons = """
 app = Flask(__name__)
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-05-03_12-25-18"
+APP_BUILD = "2026-05-03_13-33-15"
 APP_NOTE = "dev en cours"
 
 
