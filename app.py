@@ -593,7 +593,7 @@ nav_buttons = """
 app = Flask(__name__)
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-05-03_18-02-26"
+APP_BUILD = "2026-05-03_18-26-06"
 APP_NOTE = "dev en cours"
 
 
@@ -692,7 +692,7 @@ def home():
             z-index:999;
         ">
             <div class="card">
-                <a class="btn allocine" href="/download_all">
+                <a class="btn allocine" href="/download_all" target="_blank">
                     💾 Télécharger Films
                 </a>
             </div>
