@@ -460,7 +460,12 @@ def get_style():
     
     <script>
     function downloadZip() {
-        window.open("/download_all", "_blank");
+        const link = document.createElement("a");
+        link.href = "/download_all";
+        link.target = "_blank";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     }
     </script>
     
@@ -598,7 +603,7 @@ nav_buttons = """
 app = Flask(__name__)
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-05-03_18-34-29"
+APP_BUILD = "2026-05-03_18-37-14"
 APP_NOTE = "dev en cours"
 
 
