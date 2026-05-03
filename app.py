@@ -580,7 +580,7 @@ nav_buttons = """
 app = Flask(__name__)
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-05-03_13-33-15"
+APP_BUILD = "2026-05-03_13-39-21"
 APP_NOTE = "dev en cours"
 
 
