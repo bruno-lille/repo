@@ -458,6 +458,11 @@ def get_style():
     return """
     <meta name="viewport" content="width=device-width, initial-scale=1">
     
+    <script>
+    function downloadZip() {
+        window.open("/download_all", "_blank");
+    }
+    </script>
     
     <script>
     function updateCount() {
@@ -593,7 +598,7 @@ nav_buttons = """
 app = Flask(__name__)
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-05-03_18-26-06"
+APP_BUILD = "2026-05-03_18-34-29"
 APP_NOTE = "dev en cours"
 
 
@@ -692,7 +697,7 @@ def home():
             z-index:999;
         ">
             <div class="card">
-                <a class="btn allocine" href="/download_all" target="_blank">
+                <a class="btn allocine" href="#" onclick="downloadZip()">
                     💾 Télécharger Films
                 </a>
             </div>
