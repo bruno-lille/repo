@@ -6,3 +6,6 @@ Sauvegarde importantes/
 archives/
 *.lnk
 last_build.txt
+app_dev.py
+app_dev*.py
+local_backups/
