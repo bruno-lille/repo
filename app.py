@@ -8,6 +8,7 @@ import urllib.parse
 import unicodedata
 import re
 import time
+import html
 from datetime import datetime
 from openpyxl import Workbook
 
@@ -594,7 +595,7 @@ nav_buttons = """
 app = Flask(__name__)
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-05-03_18-42-56"
+APP_BUILD = "2026-05-04_01-57-07"
 APP_NOTE = "dev en cours"
 
 
@@ -1244,7 +1245,73 @@ def confirm_add():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
-    # 🔥 générer DISC_ID automatiquement
+    # 🔍 DONNÉES
+    titre = request.form.get("title", "").strip()
+    titre_norm = normalize(titre)
+
+    # 🔍 CHECK DOUBLON
+    cursor.execute("SELECT titre, disc_id, type, emplacement FROM films")
+    rows = cursor.fetchall()
+
+    doublons = [
+        r for r in rows
+        if normalize(r[0]) == titre_norm
+    ]
+
+    # 🚨 SI DOUBLON → PAGE CONFIRMATION
+    if doublons:
+
+        html = get_style()
+        html += f"<h2>⚠️ Doublon détecté : {html.escape(titre)}</h2>"
+        html += "<p>Ce film existe déjà dans votre collection :</p>"
+
+        for d in doublons:
+            html += f"""
+            <div style="margin:8px 0; font-size:15px;">
+                🎬 {d[0]} <br>
+                📀 {d[2]} &nbsp;&nbsp;
+                🆔 {d[1]} &nbsp;&nbsp;
+                📁 {d[3] or '-'}
+            </div>
+            """
+
+        # 🔥 FORMULAIRE POUR FORCER
+        html += f"""
+        <div class="card">
+            <form method="post" action="/confirm_add_force">
+
+                <input type="hidden" name="title" value="{html.escape(request.form.get('title',''))}">
+                <input type="hidden" name="emplacement" value="{html.escape(request.form.get('emplacement',''))}">
+                <input type="hidden" name="type" value="{html.escape(request.form.get('type',''))}">
+                <input type="hidden" name="allocine" value="{html.escape(request.form.get('allocine',''))}">
+                <input type="hidden" name="tmdb_id" value="{html.escape(request.form.get('tmdb_id',''))}">
+                <input type="hidden" name="poster" value="{html.escape(request.form.get('poster',''))}">
+                <input type="hidden" name="year" value="{html.escape(request.form.get('year',''))}">
+                <input type="hidden" name="genres" value="{html.escape(request.form.get('genres',''))}">
+                <input type="hidden" name="overview" value="{html.escape(request.form.get('overview',''))}">
+                <input type="hidden" name="cast" value="{html.escape(request.form.get('cast',''))}">
+
+                <button class="btn new">✅ Ajouter quand même</button>
+            </form>
+
+            <a class="btn retour" href="/">❌ Annuler</a>
+        </div>
+        """
+
+        conn.close()
+        return html
+
+    # ✅ SINON → INSERT NORMAL
+    return insert_film(request.form)
+    
+def insert_film(form):
+
+    import sqlite3
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    # 🔢 DISC_ID AUTO
     cursor.execute("SELECT disc_id FROM films ORDER BY id DESC LIMIT 1")
     last = cursor.fetchone()
 
@@ -1261,16 +1328,16 @@ def confirm_add():
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         new_id,
-        request.form.get("emplacement", ""),
-        request.form.get("type", ""),
-        request.form.get("title", ""),
-        request.form.get("allocine", ""),
-        request.form.get("tmdb_id", ""),
-        request.form.get("poster", ""),
-        request.form.get("year", ""),
-        request.form.get("genres", ""),
-        request.form.get("overview", ""),
-        request.form.get("cast", ""),
+        form.get("emplacement", ""),
+        form.get("type", ""),
+        form.get("title", ""),
+        form.get("allocine", ""),
+        form.get("tmdb_id", ""),
+        form.get("poster", ""),
+        form.get("year", ""),
+        form.get("genres", ""),
+        form.get("overview", ""),
+        form.get("cast", ""),
         None
     ))
 
@@ -1286,6 +1353,10 @@ def confirm_add():
         <a class="btn allocine" href="/">🏠 Retour accueil</a>
     </div>
     """
+    
+@app.route("/confirm_add_force", methods=["POST"])
+def confirm_add_force():
+    return insert_film(request.form)
     
 #26 — DELETE
 @app.route("/delete/<disc_id>")
