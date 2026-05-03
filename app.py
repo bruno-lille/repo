@@ -565,7 +565,7 @@ nav_buttons = """
 app = Flask(__name__)
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-05-03_16-55-36"
+APP_BUILD = "2026-05-03_16-59-42"
 APP_NOTE = "dev en cours"
 
 
@@ -644,6 +644,7 @@ def home():
                 💾 Télécharger Films.db
             </a>
         </div>
+        
         <div class="card">
             <a class="btn allocine" href="/download_excel">
                 📊 Télécharger Films.xlsx
@@ -1612,7 +1613,7 @@ def download_excel():
         file_path,
         as_attachment=True,
         download_name=filename
-    ))
+    )
             
 #30 — HEALTH
 @app.route("/health")
