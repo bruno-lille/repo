@@ -564,7 +564,7 @@ nav_buttons = """
 app = Flask(__name__)
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-05-03_16-18-05"
+APP_BUILD = "2026-05-03_16-32-40"
 APP_NOTE = "dev en cours"
 
 
@@ -1493,7 +1493,7 @@ def backup_db():
         
         # ✅ RÈGLE D’OR
         #   👉 NE JAMAIS désactiver ce bloc (if not should_cleanup():) sans désactiver aussi le delete
-                if not should_cleanup():
+        if not should_cleanup():
             print("⏱️ Cleanup ignoré (moins de 1h)")
             return f"Backup OK → {backup_status}"
             
