@@ -5,7 +5,10 @@ import datetime
 import os
 import requests
 
+BASE_DIR = r"C:\Users\BRUNO LEGRAND\Documents\application python\dvd bluray"
+FLAG_PATH = os.path.join(BASE_DIR, "no_cleanup.flag")
 
+open(FLAG_PATH, "w").close()
 
 
 app = Flask(__name__)
@@ -72,7 +75,7 @@ def export_zip():
 
     
     
-#------------IMPORT GITHUB AUTO DERNIER BACKUP---------
+#------------IMPORT depuis GITHUB = DERNIER BACKUP---------
 @app.route("/import_remote")
 def import_remote():
 
@@ -144,6 +147,12 @@ def import_remote():
     with open("films.db", "wb") as f:
         f.write(r.content)
         
+        # 🔥 drapeau pour bloquer le cleanup
+    open("no_cleanup.flag", "w").close()
+    
+        #la ligne ci dessous à faire  voir finalisation V1
+     #  open("no_cleanup.flag", "w").close()
+        
     chemin_db = os.path.abspath("films.db")
     chemin_backup = os.path.abspath(backup_path) if backup_path != "Aucune sauvegarde" else "Aucune sauvegarde"
 
@@ -167,7 +176,8 @@ def import_remote():
 
         
         
-#------------Export vers GITHUB---------
+#------------Déployer Appli (envoie app.py + films.db + requirements.txt vers GitHub via API)---------
+
 @app.route("/push_data")
 def push_data():
 

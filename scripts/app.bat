@@ -17,6 +17,7 @@ taskkill /F /IM python.exe >nul 2>&1
 set ENV=DEV
 set GITHUB_TOKEN=ton_token_ici
 
+
 :: ▶️ Lancer app en arrière-plan
 echo [INFO] Démarrage serveur Flask...
 start "" python app.py

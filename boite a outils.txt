@@ -5,3 +5,10 @@ APP_NOTE = "dev en cours"
 
 ------------------------------
 
+UPTIMEROBOT
+
+GITHUB
+
+RENDER
+
+------------------

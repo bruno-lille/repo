@@ -1,7 +1,8 @@
 @echo off
 title Admin Import / Export
 
-cd /d "%~dp0"
+:: Se placer dans le dossier racine dvd-bluray
+cd /d "%~dp0.."
 
 echo Lancement de l'application admin...
 echo.
@@ -9,8 +10,8 @@ echo.
 REM 🔥 ouvre le navigateur après 2 secondes
 start "" cmd /c "timeout /t 2 >nul & start http://127.0.0.1:5001"
 
-REM lance Flask
-py -3.11 imp_exp.py
+REM 🔥 lancer le bon script
+py -3.11 tools\Imp_Exp.py
 
 echo.
 echo Appuyez sur une touche pour fermer...

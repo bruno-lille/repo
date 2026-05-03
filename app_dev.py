@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*-
+#⚙️ 🟢 FONDATIONS
+#01--IMPORTS CORE
 
 import os
 import base64
@@ -6,54 +7,211 @@ import requests
 import urllib.parse
 import unicodedata
 import re
+import time
+from datetime import datetime
 
-ENV = os.getenv("ENV", "DEV")
-
-def get_github_token():
-    token = os.getenv("GITHUB_TOKEN")
-    if not token:
-        print("❌ GITHUB_TOKEN manquant")
-    return token
-
-GITHUB_TOKEN = get_github_token()
-
+#02--IMPORTS WEB
 from flask import Flask, request, redirect
 
-# 🔥 CRÉATION APP (OBLIGATOIRE)
-app = Flask(__name__)
+#03--CONFIG GLOBALE
 
-nav_buttons = """
-<div class="card">
-    <div class="btn-row">
-        <a class="btn retour" href="javascript:history.back()">⬅️ Retour</a>
-        <a class="btn new" href="/">❌ Annuler</a>
-    </div>
-</div>
-"""
-
-APP_VERSION = "V1-dev"
-APP_BUILD = "DEV_BUILD"
-APP_NOTE = "dev en cours"
-
-
-
-
-
-
-# 🔧 Chemin base de données (UNIQUE)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+FLAG_PATH = os.path.join(BASE_DIR, "no_cleanup.flag")
 DB_PATH = os.path.join(BASE_DIR, "films.db")
+TMP_PATH = os.path.join(BASE_DIR, "backup_temp.db")
+CLEANUP_FILE = os.path.join(BASE_DIR, "last_cleanup.txt")
 
-# 🔄 Cache mémoire
-DATA = None
+COL = {
+    "EMPLACEMENT": 1,
+    "TYPE": 3,
+    "DISC_ID": 5,   # ✅ colonne E
+    "TITRE": 6,
+    "ALLOCINE": 7,
+    "TMDB_ID": 13,
+    "JAQUETTE": 14,
+    "ANNEE": 15,
+    "GENRES": 16,
+    "RESUME": 17,
+    "CASTING": 18,
+    "ORDRE": 11
+}
 
-def reset_cache():
-    global DATA
-    DATA = None
+#04 — ENV / TOKENS
+
+ENV = os.getenv("ENV", "DEV")
+TMDB_API_KEY = os.getenv("TMDB_API_KEY")
+
+
+
+
+#🔐 🟡 GITHUB / BACKUP CORE
+#05 — GITHUB UTILS
+
+GITHUB_TOKEN = None
+
+# def get_github_token():
+    # token = os.getenv("GITHUB_TOKEN")
+    # if not token:
+        # print("❌ GITHUB_TOKEN manquant")
+    # return token
     
+# GITHUB_TOKEN = get_github_token()
 
-     
-#------------FONCTION SQL------------
+
+#06 — CLEANUP LOGIC
+def should_cleanup():
+    return False
+
+def mark_cleanup():
+    pass
+
+# def should_cleanup():
+    # if not os.path.exists(CLEANUP_FILE):
+        # return True
+
+    # try:
+        # with open(CLEANUP_FILE, "r") as f:
+            # last = float(f.read())
+    # except Exception:
+        # return True
+
+    # return time.time() - last > 3600
+
+
+# def mark_cleanup():
+    # with open(CLEANUP_FILE, "w") as f:
+        # f.write(str(time.time()))
+        
+
+        
+#07 — RESTORE DB
+
+def restore_db():
+    print("⛔ RESTORE désactivé")
+    
+def init_app():
+    print("🚀 App init (mode sans restore)")
+
+# def get_latest_backup(files, headers):
+
+    # latest_file = None
+    # latest_date = None
+
+    # for f in files:
+
+        # try:
+            # url = f["git_url"]
+            # r = requests.get(url, headers=headers, timeout=5)
+
+            # if r.status_code != 200:
+                # continue
+
+            # data = r.json()
+
+            # 🔐 sécurisation accès date
+            # date = data.get("committer", {}).get("date")
+
+            # if not date:
+                # continue
+
+            # if not latest_date or date > latest_date:
+                # latest_date = date
+                # latest_file = f
+
+        # except Exception as e:
+            # print("⚠️ erreur fichier backup :", e)
+            # continue
+
+    # return latest_file
+
+
+# def restore_db():
+    
+    # print("🔥 RESTORE déclenché")
+
+    # try:
+        # token = GITHUB_TOKEN
+        # repo = "bruno-lille/repo"
+
+        # if not token or not repo:
+            # print("❌ Variables GitHub manquantes")
+            # return
+
+        # headers = {
+            # "Authorization": f"token {token}"
+        # }
+
+        # 📥 récupérer les backups
+        # url = f"https://api.github.com/repos/{repo}/contents/backups"
+        # r = requests.get(url, headers=headers, timeout=5)
+
+        # if r.status_code != 200:
+            # print("❌ Impossible de récupérer les backups")
+            # return
+
+        # files = r.json()
+
+        # 🔥 garder uniquement les .db
+        # db_files = [f for f in files if f["name"].endswith(".db")]
+
+        # if not db_files:
+            # print("❌ Aucun backup .db trouvé")
+            # return
+
+        # latest = sorted(db_files, key=lambda x: x["name"], reverse=True)[0]
+
+        # download_url = latest["download_url"]
+
+        # r = requests.get(download_url, timeout=5)
+
+        # if r.status_code != 200:
+            # print("❌ Erreur téléchargement DB")
+            # return
+
+        # 🔐 sécurité : ne pas écraser une DB valide
+        # if os.path.exists(DB_PATH):
+            # size = os.path.getsize(DB_PATH)
+
+            # if size > 10000:  # seuil simple (DB valide)
+                # print("⚠️ DB locale déjà valide → restore ignoré")
+                # return
+
+        # 💾 écriture directe (PAS de vérification locale)
+        # tmp_restore = DB_PATH + ".restore"
+
+        # with open(tmp_restore, "wb") as f:
+            # f.write(r.content)
+
+        # 🔍 vérification taille minimale
+        # if os.path.getsize(tmp_restore) < 1000:
+            # print("❌ Restore invalide (fichier trop petit)")
+            # os.remove(tmp_restore)
+            # return
+
+        # 🔥 remplacement sécurisé
+        # os.replace(tmp_restore, DB_PATH)
+
+        # print(f"✅ DB restaurée : {latest['name']}")
+
+    # except Exception as e:
+        # print("❌ ERREUR RESTORE :", e)
+
+# def init_app():
+    # if ENV == "PROD":
+        # print("🌐 Mode PROD → vérification DB")
+
+        # if not os.path.exists(DB_PATH):
+            # print("📥 DB absente → restauration GitHub")
+            # restore_db()
+        # else:
+            # print("✅ DB déjà présente → OK")
+
+    # else:
+        # print("🧪 Mode DEV → pas de restore")
+        
+#💾 🔵 DATABASE
+#08 — SQL CORE
+#Ancien03------------FONCTION SQL------------
 
 def search_films_sql(query, exact_mode=False):
     import sqlite3
@@ -76,130 +234,9 @@ def search_films_sql(query, exact_mode=False):
     conn.close()
 
     return results
+    
+#09 — LOAD DATA
 
-
-
-# 🔁 RESTORE DB DEPUIS GITHUB (VERSION SAFE)
-def get_latest_backup(files, headers):
-
-    latest_file = None
-    latest_date = None
-
-    for f in files:
-
-        try:
-            url = f["git_url"]
-            r = requests.get(url, headers=headers, timeout=5)
-
-            if r.status_code != 200:
-                continue
-
-            data = r.json()
-
-            # 🔐 sécurisation accès date
-            date = data.get("committer", {}).get("date")
-
-            if not date:
-                continue
-
-            if not latest_date or date > latest_date:
-                latest_date = date
-                latest_file = f
-
-        except Exception as e:
-            print("⚠️ erreur fichier backup :", e)
-            continue
-
-    return latest_file
-
-
-def restore_db():
-
-    try:
-        token = GITHUB_TOKEN
-        repo = "bruno-lille/repo"
-
-        if not token or not repo:
-            print("❌ Variables GitHub manquantes")
-            return
-
-        headers = {
-            "Authorization": f"token {token}"
-        }
-
-        # 📥 récupérer les backups
-        url = f"https://api.github.com/repos/{repo}/contents/backups"
-        r = requests.get(url, headers=headers, timeout=5)
-
-        if r.status_code != 200:
-            print("❌ Impossible de récupérer les backups")
-            return
-
-        files = r.json()
-
-        # 🔥 garder uniquement les .db
-        db_files = [f for f in files if f["name"].endswith(".db")]
-
-        if not db_files:
-            print("❌ Aucun backup .db trouvé")
-            return
-
-        latest = sorted(db_files, key=lambda x: x["name"], reverse=True)[0]
-
-        download_url = latest["download_url"]
-
-        r = requests.get(download_url, timeout=5)
-
-        if r.status_code != 200:
-            print("❌ Erreur téléchargement DB")
-            return
-
-        # 💾 écriture directe (PAS de vérification locale)
-        with open(DB_PATH, "wb") as f:
-            f.write(r.content)
-
-        print(f"✅ DB restaurée : {latest['name']}")
-
-    except Exception as e:
-        print("❌ ERREUR RESTORE :", e)
-
-def init_app():
-    if ENV == "PROD":
-        print("🌐 Mode PROD → vérification DB")
-
-        if not os.path.exists(DB_PATH):
-            print("📥 DB absente → restauration GitHub")
-            restore_db()
-        else:
-            print("✅ DB déjà présente → OK")
-
-    else:
-        print("🧪 Mode DEV → pas de restore")
-
-
-
-
-TMDB_API_KEY = os.getenv("TMDB_API_KEY")
-
-
-
-
-COL = {
-    "EMPLACEMENT": 1,
-    "TYPE": 3,
-    "DISC_ID": 5,   # ✅ colonne E
-    "TITRE": 6,
-    "ALLOCINE": 7,
-    "TMDB_ID": 13,
-    "JAQUETTE": 14,
-    "ANNEE": 15,
-    "GENRES": 16,
-    "RESUME": 17,
-    "CASTING": 18,
-    "ORDRE": 11
-}
-
-# ----------- CHARGEMENT SQL LIGHT -----------
 def load_data():
     import sqlite3
 
@@ -239,6 +276,8 @@ def load_data():
 
     return titres, liens, col_A, col_C, tmdb_ids, jaquettes, annees, genres, resumes, casting, disc_ids, ordres
     
+DATA = None
+    
 def load_data_cached():
     global DATA
 
@@ -246,13 +285,10 @@ def load_data_cached():
         DATA = load_data()
 
     return DATA
+    
+#🌐 🟣 API EXTERNES
+#10 — TMDB SEARCH
 
-
-def short_text(text, max_len=140):
-    return text if len(text) <= max_len else text[:max_len] + "..."
-
-      
-        
 def search_tmdb_multi(query):
     print("TMDB KEY:", TMDB_API_KEY)
     print("QUERY:", query)
@@ -306,10 +342,9 @@ def search_tmdb_multi(query):
     )
 
     return sorted_results[:5]
-
-# ----------- EXTRACTION ID TMDB -----------
-
     
+#11 — TMDB HELPERS
+
 def extract_tmdb_id(value):
 
     value = value.strip()
@@ -325,6 +360,51 @@ def extract_tmdb_id(value):
 
     return None
     
+#🧰 🟠 UTILITAIRES
+#12 — NORMALISATION
+
+def normalize(text):
+    if not text:
+        return ""
+
+    text = text.lower()
+    text = unicodedata.normalize("NFD", text)
+    text = "".join(c for c in text if unicodedata.category(c) != "Mn")
+
+    text = re.sub(r'[^a-z0-9]', '', text)
+
+    return text
+    
+def normalize_words(text):
+    if not text:
+        return []
+
+    text = text.lower()
+    text = unicodedata.normalize("NFD", text)
+    text = "".join(c for c in text if unicodedata.category(c) != "Mn")
+
+    # garder les mots séparés
+    words = re.findall(r'\b[a-z0-9]+\b', text)
+
+    return words
+    
+#13 — UTILS GENERIQUES
+
+def short_text(text, max_len=140):
+    return text if len(text) <= max_len else text[:max_len] + "..."
+    
+def safe_int(val, default=0):
+    try:
+        return int(val)
+    except:
+        return default
+        
+
+        
+#14 — EXCEL UTILS
+#ancien06 ----------- EXTRACTION ID TMDB -----------
+
+
 def generate_disc_id(ws):
 
     max_id = 0
@@ -354,9 +434,13 @@ def find_row_by_disc_id(ws, disc_id):
             return idx
 
     return None
+    
 
 
-# ----------- STYLE GLOBAL -----------
+        
+#🎨 ⚪ UI / FRONT
+#15 — STYLE
+
 def get_style():
     return """
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -478,42 +562,39 @@ def get_style():
     .retour {background:#444; color:white;}
     </style>
     """
-#-----------Appli---------------
+
+#16 - composants UI réutilisables
+nav_buttons = """
+<div class="card">
+    <div class="btn-row">
+        <a class="btn retour" href="javascript:history.back()">⬅️ Retour</a>
+        <a class="btn new" href="/">❌ Annuler</a>
+    </div>
+</div>
+"""
+
+
+#🚀 🔴 APP FLASK
+#17 — INIT APP
+
+app = Flask(__name__)
+
+APP_VERSION = "V1-dev"
+APP_BUILD = "DEV_BUILD"
+APP_NOTE = "dev en cours"
 
 
 
-def normalize(text):
-    if not text:
-        return ""
+#18 — CACHE reset
 
-    text = text.lower()
-    text = unicodedata.normalize("NFD", text)
-    text = "".join(c for c in text if unicodedata.category(c) != "Mn")
 
-    text = re.sub(r'[^a-z0-9]', '', text)
 
-    return text
-    
-def normalize_words(text):
-    if not text:
-        return []
-
-    text = text.lower()
-    text = unicodedata.normalize("NFD", text)
-    text = "".join(c for c in text if unicodedata.category(c) != "Mn")
-
-    # garder les mots séparés
-    words = re.findall(r'\b[a-z0-9]+\b', text)
-
-    return words
-       
-def safe_int(val, default=0):
-    try:
-        return int(val)
-    except:
-        return default
-
-# ----------- HOME -----------
+def reset_cache():
+    global DATA
+    DATA = None
+  
+#🔍 🟢 ROUTES PRINCIPALES  
+#19 — HOME
 @app.route("/", methods=["GET"])
 def home():
 
@@ -770,11 +851,64 @@ def home():
 
     bloc += nav_buttons
     return html + bloc
+    
+#20 — COUNT
+@app.route("/count")
+def count():
 
+    query_raw = request.args.get("q", "").strip()
 
- 
+    if not query_raw:
+        return "0"
 
-# ----------- PAGE CORRECTION -----------
+    # 🔥 gestion mode exact (parenthèses)
+    exact_mode = False
+    if query_raw.startswith("(") and query_raw.endswith(")"):
+        exact_mode = True
+        query = query_raw[1:-1].strip()
+    else:
+        query = query_raw
+
+    # 🔥 récupération des données
+    rows = search_films_sql(query, exact_mode)
+    results = list(rows)
+
+    # 🔥 fallback large
+    if not results:
+        rows = search_films_sql("", False)
+        results = list(rows)
+
+    # 🔥 NORMALISATION IDENTIQUE À home()
+    q_norm = normalize(query)
+    q_words = [normalize(w) for w in query.lower().split()]
+
+    filtered = []
+
+    for row in results:
+
+        titre_norm = normalize(row["titre"])
+
+        # 🔥 mode exact
+        if exact_mode:
+            if titre_norm == q_norm:
+                filtered.append(row)
+            continue
+
+        # 🔥 multi-mots intelligent
+        match = True
+        for q in q_words:
+            if q not in titre_norm:
+                match = False
+                break
+
+        if match:
+            filtered.append(row)
+
+    return str(len(filtered))
+    
+#✏️ 🟡 GESTION FILMS
+#21 — SUGGEST UPDATE
+#ancien10 ----------- PAGE CORRECTION -----------
 @app.route("/suggest_update/<disc_id>")
 def suggest_update(disc_id):
 
@@ -872,9 +1006,8 @@ def suggest_update(disc_id):
         
 
     return html
-
-
-# ----------- UPDATE AUTO -----------
+    
+#22 — UPDATE AUTO
 @app.route("/confirm_update/<disc_id>/<int:tmdb_id>")
 def confirm_update(disc_id, tmdb_id, query=""):
 
@@ -914,10 +1047,8 @@ def confirm_update(disc_id, tmdb_id, query=""):
 
     query = request.args.get("q", "")
     return redirect(f"/?q={query}")
-
-
-
-# ----------- UPDATE MANUEL (ID OU URL) -----------
+    
+#23 — UPDATE MANUEL
 @app.route("/manual_update/<disc_id>", methods=["POST"])
 def manual_update(disc_id):
 
@@ -981,9 +1112,9 @@ def manual_update(disc_id):
 
     
     return redirect(f"/?q={query}")
-
-
-# ----------- PAGE AJOUT FILM -----------
+    
+#24 — ADD FILM
+#ancien13 ----------- PAGE AJOUT FILM -----------
 @app.route("/add/<int:tmdb_id>")
 def add_movie(tmdb_id):
 
@@ -1059,8 +1190,7 @@ def add_movie(tmdb_id):
     </div>
     """
             
-
-# ----------- CONFIRM ADD -----------
+#25 — CONFIRM ADD
 @app.route("/confirm_add", methods=["POST"])
 def confirm_add():
 
@@ -1112,8 +1242,7 @@ def confirm_add():
     </div>
     """
     
-# ----------- suppression ligne -----------
-
+#26 — DELETE
 @app.route("/delete/<disc_id>")
 def delete_movie(disc_id):
 
@@ -1138,65 +1267,8 @@ def delete_movie(disc_id):
         <a href="/" style="font-size:20px;">⬅️ Retour</a>
     </div>
     """
-#------------COMPTEUR--------------
-
-
-@app.route("/count")
-def count():
-
-    query_raw = request.args.get("q", "").strip()
-
-    if not query_raw:
-        return "0"
-
-    # 🔥 gestion mode exact (parenthèses)
-    exact_mode = False
-    if query_raw.startswith("(") and query_raw.endswith(")"):
-        exact_mode = True
-        query = query_raw[1:-1].strip()
-    else:
-        query = query_raw
-
-    # 🔥 récupération des données
-    rows = search_films_sql(query, exact_mode)
-    results = list(rows)
-
-    # 🔥 fallback large
-    if not results:
-        rows = search_films_sql("", False)
-        results = list(rows)
-
-    # 🔥 NORMALISATION IDENTIQUE À home()
-    q_norm = normalize(query)
-    q_words = [normalize(w) for w in query.lower().split()]
-
-    filtered = []
-
-    for row in results:
-
-        titre_norm = normalize(row["titre"])
-
-        # 🔥 mode exact
-        if exact_mode:
-            if titre_norm == q_norm:
-                filtered.append(row)
-            continue
-
-        # 🔥 multi-mots intelligent
-        match = True
-        for q in q_words:
-            if q not in titre_norm:
-                match = False
-                break
-
-        if match:
-            filtered.append(row)
-
-    return str(len(filtered))
     
-    #----------Tout Automatique------------
-    
-
+#27 — PREFILL
 @app.route("/prefill/<disc_id>/<int:tmdb_id>")
 def prefill(disc_id, tmdb_id):
 
@@ -1270,23 +1342,73 @@ def prefill(disc_id, tmdb_id):
         </form>
     </div>
     """
-#-------------SAUVEGARDE VERS GITHUB----------------
+    
+#28 — MANUAL ADD
+#ancien20---------Ajout Nanuel fiche vide------------------
+@app.route("/manual_add", methods=["POST"])
+def manual_add():
+
+    title = request.form.get("title")
+    emplacement = request.form.get("emplacement")
+    type_disc = request.form.get("type")
+    allocine = request.form.get("allocine")
+    tmdb_input = request.form.get("tmdb_input", "").strip()
+
+    # 🔥 nettoyage TMDB ID
+    import re
+    tmdb_id = ""
+
+    if tmdb_input.isdigit():
+        tmdb_id = tmdb_input
+    elif "themoviedb.org" in tmdb_input:
+        match = re.search(r"/movie/(\\d+)", tmdb_input)
+        if match:
+            tmdb_id = match.group(1)
+
+    import sqlite3
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    # 🔥 génération disc_id automatique
+    cursor.execute("SELECT MAX(id) FROM films")
+    last_id = cursor.fetchone()[0] or 0
+    next_id = last_id + 1
+    disc_id = f"DISC-{next_id:05d}"
+
+    # 🔥 INSERT COMPLET
+    cursor.execute("""
+        INSERT INTO films (disc_id, titre, emplacement, type, allocine, tmdb_id)
+        VALUES (?, ?, ?, ?, ?, ?)
+    """, (disc_id, title, emplacement, type_disc, allocine, tmdb_id))
+
+    conn.commit()
+    conn.close()
+
+    # 🔥 retour à la recherche
+    return redirect(f"/?q={title}")
+    
+#🔁 🔵 SYSTÈME / INFRA
+#29 — BACKUP
+
+# @app.route("/backup_db", methods=["GET", "HEAD"])
+# def backup_db():
+    # return "⛔ Backup désactivé"
 
 @app.route("/backup_db", methods=["GET", "HEAD"])
 def backup_db():
+    
+    print("🧪 BACKUP MODE TEST (cleanup OFF)")
 
     import os
     import base64
     import requests
     import sqlite3
     import shutil
-    from datetime import datetime
+
 
     print("STEP 1: start backup")
 
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    DB_PATH = os.path.join(BASE_DIR, "films.db")
-    TMP_PATH = os.path.join(BASE_DIR, "backup_temp.db")
+
 
     token = GITHUB_TOKEN
     repo = "bruno-lille/repo"
@@ -1343,10 +1465,23 @@ def backup_db():
             return f"❌ Backup erreur {r.status_code}"
 
         print(f"✅ Backup créé : {filename}")
+        print("🧪 Cleanup désactivé pour test")
+        return f"Backup OK → {backup_status}"   
+        
+        
+        # 🔥 sécurité import
+        if os.path.exists(FLAG_PATH):
+            print("⚠️ Cleanup désactivé (import récent)")
+            os.remove(FLAG_PATH)
+            return f"Backup OK → {backup_status}"
+        
+
 
         # ==================================================
         # 🧠 NETTOYAGE INTELLIGENT
         # ==================================================
+        
+        
 
         print("STEP 6: listing backups")
 
@@ -1366,79 +1501,52 @@ def backup_db():
         ]
 
         print("STEP 8: db_files =", len(db_files))
+        
+        # 🧠 ANTI-SPAM CLEANUP
+        # if not should_cleanup():
+            # print("⏱️ Cleanup ignoré (moins de 1h)")
+            # return f"Backup OK → {backup_status}"
+            
+        # print("🧠 Cleanup autorisé → lancement (timestamp enregistré)")
+        # mark_cleanup()
+            
 
-        if len(db_files) <= 50:
-            return f"Backup OK → {backup_status}"
+        # 🔥 TRI
 
-        db_files_sorted = sorted(db_files, key=lambda x: x["name"], reverse=True)
-
-        def extract_date(filename):
+        def extract_date(f):
             try:
-                date_str = filename.replace("films_", "").replace(".db", "")
-                return datetime.strptime(date_str, "%Y-%m-%d_%H-%M-%S")
-            except Exception as e:
-                print("❌ DATE ERROR:", filename, e)
+                name = f["name"].replace("films_", "").replace(".db", "")
+                return datetime.strptime(name, "%Y-%m-%d_%H-%M-%S")
+            except Exception:
                 return datetime.min
 
-        recent = []
-        weekly = {}
-        monthly = {}
+        db_files_sorted = sorted(db_files, key=extract_date, reverse=True)
 
-        for f in db_files_sorted:
+        KEEP = 20
+
+        if len(db_files_sorted) <= KEEP:
+            print("🟢 Rien à supprimer")
+            return f"Backup OK → {backup_status}"
+
+        to_delete = db_files_sorted[KEEP:]
+
+        print("STEP 9: deleting old backups =", len(to_delete))
+
+        for f in to_delete:
+            delete_data = {
+                "message": f"delete old backup {f['name']}",
+                "sha": f["sha"],
+                "branch": "main"
+            }
 
             try:
-                date = extract_date(f["name"])
+                requests.delete(f["url"], json=delete_data, headers=headers, timeout=5)
+                print("🗑️ OK:", f["name"])
             except Exception as e:
-                print("❌ LOOP DATE ERROR:", f["name"], e)
-                continue
-
-            if date == datetime.min:
-                continue
-
-            if len(recent) < 34:
-                recent.append(f)
-                continue
-
-            week_key = date.strftime("%Y-%W")
-            if week_key not in weekly and len(weekly) < 4:
-                weekly[week_key] = f
-                continue
-
-            month_key = date.strftime("%Y-%m")
-            if month_key not in monthly:
-                monthly[month_key] = f
-                continue
-
-        keep = set()
-
-        keep.update(f["name"] for f in recent)
-        keep.update(f["name"] for f in weekly.values())
-        keep.update(f["name"] for f in monthly.values())
-
-        print("STEP 9: deleting old backups")
-
-        count = 0  # 🔥 AJOUT
-
-        for f in db_files_sorted:
-            if f["name"] not in keep:
-                
-                if count >= 10:  # 🔥 LIMITE
-                    break
-
-                delete_data = {
-                    "message": f"delete old backup {f['name']}",
-                    "sha": f["sha"],
-                    "branch": "main"
-                }
-
-                try:
-                    requests.delete(f["url"], json=delete_data, headers=headers, timeout=5)
-                    print("🗑️ OK:", f["name"])
-                    count += 1  # 🔥 INCRÉMENT
-                except Exception as e:
-                    print("❌ DELETE ERROR:", f["name"], e)
+                print("❌ DELETE ERROR:", f["name"], e)
 
         print("STEP FINAL: success")
+        
 
         return f"Backup OK → {backup_status}"
 
@@ -1450,64 +1558,32 @@ def backup_db():
         if os.path.exists(TMP_PATH):
             os.remove(TMP_PATH)
             
-#----------nouvelle route---------
-
+#30 — HEALTH
 @app.route("/health")
 def health():
     return "OK", 200
     
-    
+#31 — STARTUP
 @app.before_request
 def startup():
     if not hasattr(app, "initialized"):
         init_app()
         app.initialized = True
+        
+#32 — ADMIN
+@app.route("/force_restore")
+def force_restore():
+    return "⛔ Restore désactivé"
+
+# @app.route("/force_restore")
+# def force_restore():
+    # print("🔥 RESTORE FORCÉ")
+    # restore_db()
+    # return "RESTORE DONE"
     
-    
-#---------Ajout Nanuel fiche vide------------------
+#33 — RUN
 
-@app.route("/manual_add", methods=["POST"])
-def manual_add():
-
-    title = request.form.get("title")
-    emplacement = request.form.get("emplacement")
-    type_disc = request.form.get("type")
-    allocine = request.form.get("allocine")
-    tmdb_input = request.form.get("tmdb_input", "").strip()
-
-    # 🔥 nettoyage TMDB ID
-    import re
-    tmdb_id = ""
-
-    if tmdb_input.isdigit():
-        tmdb_id = tmdb_input
-    elif "themoviedb.org" in tmdb_input:
-        match = re.search(r"/movie/(\\d+)", tmdb_input)
-        if match:
-            tmdb_id = match.group(1)
-
-    import sqlite3
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-
-    # 🔥 génération disc_id automatique
-    cursor.execute("SELECT MAX(id) FROM films")
-    last_id = cursor.fetchone()[0] or 0
-    next_id = last_id + 1
-    disc_id = f"DISC-{next_id:05d}"
-
-    # 🔥 INSERT COMPLET
-    cursor.execute("""
-        INSERT INTO films (disc_id, titre, emplacement, type, allocine, tmdb_id)
-        VALUES (?, ?, ?, ?, ?, ?)
-    """, (disc_id, title, emplacement, type_disc, allocine, tmdb_id))
-
-    conn.commit()
-    conn.close()
-
-    # 🔥 retour à la recherche
-    return redirect(f"/?q={title}")
-    
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+    
