@@ -11,7 +11,7 @@ import time
 from datetime import datetime
 
 #02--IMPORTS WEB
-from flask import Flask, request, redirect
+from flask import Flask, request, redirect, send_file
 
 #03--CONFIG GLOBALE
 
@@ -564,7 +564,7 @@ nav_buttons = """
 app = Flask(__name__)
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-05-03_15-49-03"
+APP_BUILD = "2026-05-03_16-18-05"
 APP_NOTE = "dev en cours"
 
 
@@ -636,6 +636,14 @@ def home():
                 </div>
             </div>
         </form>
+
+        
+        <div class="card">
+            <a class="btn allocine" href="/download_db">
+                💾 Télécharger la base
+            </a>
+        </div>
+        
         """
 
         return html
@@ -1375,6 +1383,8 @@ def manual_add():
 #29 — BACKUP
 @app.route("/backup_db", methods=["GET", "HEAD"])
 def backup_db():
+    if not GITHUB_TOKEN:
+        return "❌ GITHUB_TOKEN manquant"
     
     print("🧪 NOUVEAU CLEANUP ACTIF")
 
@@ -1438,7 +1448,7 @@ def backup_db():
         r = requests.put(url, json=data, headers=headers)
         backup_status = r.status_code
 
-        print("STEP 5: upload OK", r.status_code)
+        print("STEP 5:", r.status_code, r.text)
 
         if r.status_code not in [200, 201]:
             return f"❌ Backup erreur {r.status_code}"
@@ -1480,7 +1490,10 @@ def backup_db():
         print("STEP 8: db_files =", len(db_files))
         
         # 🧠 ANTI-SPAM CLEANUP
-        if not should_cleanup():
+        
+        # ✅ RÈGLE D’OR
+        #   👉 NE JAMAIS désactiver ce bloc (if not should_cleanup():) sans désactiver aussi le delete
+                if not should_cleanup():
             print("⏱️ Cleanup ignoré (moins de 1h)")
             return f"Backup OK → {backup_status}"
             
@@ -1534,6 +1547,19 @@ def backup_db():
     finally:
         if os.path.exists(TMP_PATH):
             os.remove(TMP_PATH)
+            
+#29B — DOWNLOAD DB
+@app.route("/download_db")
+def download_db():
+
+    if not os.path.exists(DB_PATH):
+        return "❌ DB introuvable"
+
+    return send_file(
+        DB_PATH,
+        as_attachment=True,
+        download_name="films_backup.db"
+    )
             
 #30 — HEALTH
 @app.route("/health")
