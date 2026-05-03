@@ -565,7 +565,7 @@ nav_buttons = """
 app = Flask(__name__)
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-05-03_16-59-42"
+APP_BUILD = "2026-05-03_17-17-53"
 APP_NOTE = "dev en cours"
 
 
@@ -652,7 +652,15 @@ def home():
         </div>
         
         """
-
+        html += """
+        <div style="margin-top:40px;">
+            <div class="card">
+                <a class="btn allocine" href="/download_all">
+                    💾 Télécharger Films
+                </a>
+            </div>
+        </div>
+        """
         return html
 
     # =========================
@@ -1613,6 +1621,69 @@ def download_excel():
         file_path,
         as_attachment=True,
         download_name=filename
+    )
+    
+#29D — DOWNLOAD ALL (ZIP)
+@app.route("/download_all")
+def download_all():
+
+    import sqlite3
+    from flask import send_file
+    from openpyxl import Workbook
+    import zipfile
+
+    if not os.path.exists(DB_PATH):
+        return "❌ DB introuvable"
+
+    now = datetime.now().strftime("%y-%m-%d_%H-%M-%S")
+
+    # 🔹 noms fichiers
+    db_name = f"Films_{now}.db"
+    excel_name = f"Films_{now}.xlsx"
+    zip_name = f"Films_{now}.zip"
+
+    db_temp = os.path.join(BASE_DIR, db_name)
+    excel_temp = os.path.join(BASE_DIR, excel_name)
+    zip_path = os.path.join(BASE_DIR, zip_name)
+
+    # 🔹 copier DB
+    import shutil
+    shutil.copyfile(DB_PATH, db_temp)
+
+    # 🔹 créer Excel
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM films")
+    rows = cursor.fetchall()
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Films"
+
+    headers = [desc[0] for desc in cursor.description]
+    ws.append(headers)
+
+    for row in rows:
+        ws.append(row)
+
+    conn.close()
+
+    wb.save(excel_temp)
+
+    # 🔹 créer ZIP
+    with zipfile.ZipFile(zip_path, 'w') as zipf:
+        zipf.write(db_temp, db_name)
+        zipf.write(excel_temp, excel_name)
+
+    # 🔹 nettoyage des fichiers temporaires
+    os.remove(db_temp)
+    os.remove(excel_temp)
+
+    return send_file(
+        zip_path,
+        as_attachment=True,
+        download_name=zip_name
     )
             
 #30 — HEALTH
