@@ -580,7 +580,7 @@ nav_buttons = """
 app = Flask(__name__)
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-05-02_20-35-59"
+APP_BUILD = "2026-05-03_12-24-44"
 APP_NOTE = "dev en cours"
 
 
@@ -1390,88 +1390,90 @@ def manual_add():
 #🔁 🔵 SYSTÈME / INFRA
 #29 — BACKUP
 
-@app.route("/backup_db", methods=["GET", "HEAD"])
-def backup_db():
-    return "⛔ Backup désactivé"
-
 # @app.route("/backup_db", methods=["GET", "HEAD"])
 # def backup_db():
+    # return "⛔ Backup désactivé"
+
+@app.route("/backup_db", methods=["GET", "HEAD"])
+def backup_db():
     
-    # print("🧪 NOUVEAU CLEANUP ACTIF")
+    print("🧪 BACKUP MODE TEST (cleanup OFF)")
 
-    # import os
-    # import base64
-    # import requests
-    # import sqlite3
-    # import shutil
-
-
-    # print("STEP 1: start backup")
+    import os
+    import base64
+    import requests
+    import sqlite3
+    import shutil
 
 
+    print("STEP 1: start backup")
 
-    # token = GITHUB_TOKEN
-    # repo = "bruno-lille/repo"
 
-    # headers = {
-        # "Authorization": f"token {token}"
-    # }
 
-    # if not os.path.exists(DB_PATH):
-        # return "❌ films.db introuvable"
+    token = GITHUB_TOKEN
+    repo = "bruno-lille/repo"
 
-    # print("STEP 2: DB found")
+    headers = {
+        "Authorization": f"token {token}"
+    }
 
-    # try:
+    if not os.path.exists(DB_PATH):
+        return "❌ films.db introuvable"
+
+    print("STEP 2: DB found")
+
+    try:
         # 🔥 1. Sécuriser SQLite
-        # conn = sqlite3.connect(DB_PATH)
-        # conn.commit()
-        # conn.execute("PRAGMA wal_checkpoint(FULL);")
-        # conn.close()
+        conn = sqlite3.connect(DB_PATH)
+        conn.commit()
+        conn.execute("PRAGMA wal_checkpoint(FULL);")
+        conn.close()
 
         # 🔥 2. Copier version stable
-        # shutil.copyfile(DB_PATH, TMP_PATH)
-        # print("STEP 3: DB copied")
+        shutil.copyfile(DB_PATH, TMP_PATH)
+        print("STEP 3: DB copied")
 
         # 🔥 3. Lire copie
-        # with open(TMP_PATH, "rb") as f:
-            # raw = f.read()
+        with open(TMP_PATH, "rb") as f:
+            raw = f.read()
 
-        # print("STEP 4: DB read OK, size =", len(raw))
+        print("STEP 4: DB read OK, size =", len(raw))
 
-        # if len(raw) < 1000:
-            # return "❌ DB invalide"
+        if len(raw) < 1000:
+            return "❌ DB invalide"
 
-        # content = base64.b64encode(raw).decode()
+        content = base64.b64encode(raw).decode()
 
         # 🔥 4. Upload GitHub
-        # now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        # filename = f"backups/films_{now}.db"
+        now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        filename = f"backups/films_{now}.db"
 
-        # url = f"https://api.github.com/repos/{repo}/contents/{filename}"
+        url = f"https://api.github.com/repos/{repo}/contents/{filename}"
 
-        # data = {
-            # "message": f"backup {now}",
-            # "content": content,
-            # "branch": "main"
-        # }
+        data = {
+            "message": f"backup {now}",
+            "content": content,
+            "branch": "main"
+        }
 
-        # r = requests.put(url, json=data, headers=headers)
-        # backup_status = r.status_code
+        r = requests.put(url, json=data, headers=headers)
+        backup_status = r.status_code
 
-        # print("STEP 5: upload OK", r.status_code)
+        print("STEP 5: upload OK", r.status_code)
 
-        # if r.status_code not in [200, 201]:
-            # return f"❌ Backup erreur {r.status_code}"
+        if r.status_code not in [200, 201]:
+            return f"❌ Backup erreur {r.status_code}"
 
-        # print(f"✅ Backup créé : {filename}")
+        print(f"✅ Backup créé : {filename}")
+        print("🧪 Cleanup désactivé pour test")
+        return f"Backup OK → {backup_status}"   
         
         
         # 🔥 sécurité import
-        # if os.path.exists(FLAG_PATH):
-            # print("⚠️ Cleanup désactivé (import récent)")
-            # os.remove(FLAG_PATH)
-            # return f"Backup OK → {backup_status}"
+        if os.path.exists(FLAG_PATH):
+            print("⚠️ Cleanup désactivé (import récent)")
+            os.remove(FLAG_PATH)
+            return f"Backup OK → {backup_status}"
         
 
 
@@ -1481,24 +1483,24 @@ def backup_db():
         
         
 
-        # print("STEP 6: listing backups")
+        print("STEP 6: listing backups")
 
-        # url = f"https://api.github.com/repos/{repo}/contents/backups"
-        # r = requests.get(url, headers=headers, timeout=5)
+        url = f"https://api.github.com/repos/{repo}/contents/backups"
+        r = requests.get(url, headers=headers, timeout=5)
 
-        # if r.status_code != 200:
-            # print("⚠️ Impossible de lister les backups")
-            # return f"Backup OK → {backup_status}"
+        if r.status_code != 200:
+            print("⚠️ Impossible de lister les backups")
+            return f"Backup OK → {backup_status}"
 
-        # files = r.json()
-        # print("STEP 7: files received =", len(files))
+        files = r.json()
+        print("STEP 7: files received =", len(files))
 
-        # db_files = [
-            # f for f in files
-            # if f["name"].startswith("films_") and f["name"].endswith(".db")
-        # ]
+        db_files = [
+            f for f in files
+            if f["name"].startswith("films_") and f["name"].endswith(".db")
+        ]
 
-        # print("STEP 8: db_files =", len(db_files))
+        print("STEP 8: db_files =", len(db_files))
         
         # 🧠 ANTI-SPAM CLEANUP
         # if not should_cleanup():
@@ -1511,50 +1513,50 @@ def backup_db():
 
         # 🔥 TRI
 
-        # def extract_date(f):
-            # try:
-                # name = f["name"].replace("films_", "").replace(".db", "")
-                # return datetime.strptime(name, "%Y-%m-%d_%H-%M-%S")
-            # except Exception:
-                # return datetime.min
+        def extract_date(f):
+            try:
+                name = f["name"].replace("films_", "").replace(".db", "")
+                return datetime.strptime(name, "%Y-%m-%d_%H-%M-%S")
+            except Exception:
+                return datetime.min
 
-        # db_files_sorted = sorted(db_files, key=extract_date, reverse=True)
+        db_files_sorted = sorted(db_files, key=extract_date, reverse=True)
 
-        # KEEP = 20
+        KEEP = 20
 
-        # if len(db_files_sorted) <= KEEP:
-            # print("🟢 Rien à supprimer")
-            # return f"Backup OK → {backup_status}"
+        if len(db_files_sorted) <= KEEP:
+            print("🟢 Rien à supprimer")
+            return f"Backup OK → {backup_status}"
 
-        # to_delete = db_files_sorted[KEEP:]
+        to_delete = db_files_sorted[KEEP:]
 
-        # print("STEP 9: deleting old backups =", len(to_delete))
+        print("STEP 9: deleting old backups =", len(to_delete))
 
-        # for f in to_delete:
-            # delete_data = {
-                # "message": f"delete old backup {f['name']}",
-                # "sha": f["sha"],
-                # "branch": "main"
-            # }
+        for f in to_delete:
+            delete_data = {
+                "message": f"delete old backup {f['name']}",
+                "sha": f["sha"],
+                "branch": "main"
+            }
 
-            # try:
-                # requests.delete(f["url"], json=delete_data, headers=headers, timeout=5)
-                # print("🗑️ OK:", f["name"])
-            # except Exception as e:
-                # print("❌ DELETE ERROR:", f["name"], e)
+            try:
+                requests.delete(f["url"], json=delete_data, headers=headers, timeout=5)
+                print("🗑️ OK:", f["name"])
+            except Exception as e:
+                print("❌ DELETE ERROR:", f["name"], e)
 
-        # print("STEP FINAL: success")
+        print("STEP FINAL: success")
         
 
-        # return f"Backup OK → {backup_status}"
+        return f"Backup OK → {backup_status}"
 
-    # except Exception as e:
-        # print("❌ ERREUR BACKUP :", e)
-        # return "❌ Backup crash"
+    except Exception as e:
+        print("❌ ERREUR BACKUP :", e)
+        return "❌ Backup crash"
 
-    # finally:
-        # if os.path.exists(TMP_PATH):
-            # os.remove(TMP_PATH)
+    finally:
+        if os.path.exists(TMP_PATH):
+            os.remove(TMP_PATH)
             
 #30 — HEALTH
 @app.route("/health")
