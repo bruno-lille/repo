@@ -108,7 +108,7 @@ def mark_cleanup():
 
             # data = r.json()
 
-            🔐 sécurisation accès date
+            # 🔐 sécurisation accès date
             # date = data.get("committer", {}).get("date")
 
             # if not date:
@@ -580,7 +580,7 @@ nav_buttons = """
 app = Flask(__name__)
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-05-03_13-39-21"
+APP_BUILD = "2026-05-03_13-42-32"
 APP_NOTE = "dev en cours"
 
 
