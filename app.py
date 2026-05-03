@@ -21,6 +21,7 @@ FLAG_PATH = os.path.join(BASE_DIR, "no_cleanup.flag")
 DB_PATH = os.path.join(BASE_DIR, "films.db")
 TMP_PATH = os.path.join(BASE_DIR, "backup_temp.db")
 CLEANUP_FILE = os.path.join(BASE_DIR, "last_cleanup.txt")
+LAST_BACKUP_FILE = os.path.join(BASE_DIR, "last_backup.txt")
 
 COL = {
     "EMPLACEMENT": 1,
@@ -57,6 +58,33 @@ def get_github_token():
 GITHUB_TOKEN = get_github_token()
 
 #06 — CLEANUP LOGIC
+
+def get_last_backup_delay():
+
+    if not os.path.exists(LAST_BACKUP_FILE):
+        return "jamais"
+
+    try:
+        with open(LAST_BACKUP_FILE, "r") as f:
+            last = float(f.read())
+    except:
+        return "inconnu"
+
+    delay = int(time.time() - last)
+
+    if delay < 60:
+        return f"{delay}s"
+
+    minutes = delay // 60
+    if minutes < 60:
+        return f"{minutes} min"
+
+    hours = minutes // 60
+    if hours < 24:
+        return f"{hours} h"
+
+    days = hours // 24
+    return f"{days} j"
 
 def should_cleanup():
     if not os.path.exists(CLEANUP_FILE):
@@ -565,7 +593,7 @@ nav_buttons = """
 app = Flask(__name__)
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-05-03_17-17-53"
+APP_BUILD = "2026-05-03_17-45-52"
 APP_NOTE = "dev en cours"
 
 
@@ -620,6 +648,20 @@ def home():
         ">
             {APP_VERSION} | {APP_BUILD}
         </div>
+        
+        <div style="
+            position:fixed;
+            top:30px;
+            right:10px;
+            font-size:12px;
+            color:#aaa;
+            background:#222;
+            padding:4px 8px;
+            border-radius:6px;
+            z-index:9999;
+        ">
+            🕒 Dernier backup : {get_last_backup_delay()}
+        </div>
 
         <h1>🎬 Ma vidéothèque</h1>
       
@@ -637,20 +679,7 @@ def home():
                 </div>
             </div>
         </form>
-
-        
-        <div class="card">
-            <a class="btn allocine" href="/download_db">
-                💾 Télécharger Films.db
-            </a>
-        </div>
-        
-        <div class="card">
-            <a class="btn allocine" href="/download_excel">
-                📊 Télécharger Films.xlsx
-            </a>
-        </div>
-        
+   
         """
         html += """
         <div style="margin-top:40px;">
@@ -1469,7 +1498,9 @@ def backup_db():
             return f"❌ Backup erreur {r.status_code}"
 
         print(f"✅ Backup créé : {filename}")
-        
+        # 🔥 enregistrer timestamp backup
+        with open(LAST_BACKUP_FILE, "w") as f:
+            f.write(str(time.time()))
         
         # 🔥 sécurité import
         if os.path.exists(FLAG_PATH):
@@ -1626,6 +1657,12 @@ def download_excel():
 #29D — DOWNLOAD ALL (ZIP)
 @app.route("/download_all")
 def download_all():
+    
+    # 🔥 backup GitHub avant download
+    try:
+        backup_db()
+    except Exception as e:
+        print("⚠️ backup auto échoué :", e)
 
     import sqlite3
     from flask import send_file
