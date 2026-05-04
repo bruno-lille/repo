@@ -529,11 +529,12 @@ def get_style():
 
     input {
         padding:14px;
-        width:85%;
+        width:100%;
         font-size:16px;
         border-radius:10px;
         border:none;
         text-align:center;
+        margin-bottom:10px;
     }
 
     .card {
@@ -604,7 +605,7 @@ nav_buttons = """
 app = Flask(__name__)
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-05-04_11-37-57"
+APP_BUILD = "2026-05-04_12-12-19"
 APP_NOTE = "dev en cours"
 
 
@@ -1041,30 +1042,41 @@ def suggest_update(disc_id):
 
             <input type="hidden" name="disc_id" value="{film['disc_id']}">
 
-            <input id="title" name="title" value="{title}" placeholder="Titre" autofocus><br><br>
+            <input id="title" name="title" value="{title}" placeholder="Titre" autofocus style="margin-bottom:10px;">
 
-            <input name="emplacement" value="{emplacement}" placeholder="📁 Emplacement"><br><br>
+            <input name="emplacement" value="{emplacement}" placeholder="📁 Emplacement" style="margin-bottom:10px;">
 
-            <input name="type" value="{type_disc}" placeholder="📀 Type (DVD/BLURAY)"><br><br>
+            <input name="type" value="{type_disc}" placeholder="📀 Type (DVD/BLURAY)" style="margin-bottom:10px;">
 
-            <div style="display:flex; gap:6px; margin-bottom:10px;">
+            <div style="display:flex; align-items:center; gap:6px; margin-bottom:10px;">
 
                 <input name="allocine"
                        value="{allocine}"
                        placeholder="🔗 Allociné"
                        style="flex:1;">
 
-                <a class="btn allocine"
-                   href="https://www.google.com/search?q={urllib.parse.quote(title)}+allocine"
-                   target="_blank">
+                <a href="https://www.google.com/search?q={urllib.parse.quote(title)}+allocine"
+                   target="_blank"
+                   style="
+                       font-size:12px;
+                       padding:6px 10px;
+                       background:#2a9df4;
+                       color:white;
+                       border-radius:6px;
+                       text-decoration:none;
+                       height:42px;
+                       display:flex;
+                       align-items:center;
+                       justify-content:center;
+                   ">
                    🔎
                 </a>
 
             </div>
 
-            <input name="ordre" value="{ordre}" placeholder="🔢 Ordre" type="number" min="1"><br><br>
+            <input name="ordre" value="{ordre}" placeholder="🔢 Ordre" type="number" min="1" style="margin-bottom:10px;">
 
-            <div style="display:flex; gap:6px; margin-bottom:10px;">
+            <div style="display:flex; align-items:center; gap:6px; margin-bottom:10px;">
 
                 <input id="tmdb_input"
                        name="tmdb_input"
@@ -1072,27 +1084,32 @@ def suggest_update(disc_id):
                        placeholder="ID ou lien TMDB"
                        style="flex:1;">
 
-                <a class="btn allocine"
-                   href="https://www.themoviedb.org/search/movie?query={urllib.parse.quote(title)}"
-                   target="_blank">
+                <a href="https://www.themoviedb.org/search/movie?query={urllib.parse.quote(title)}"
+                   target="_blank"
+                   style="
+                       font-size:12px;
+                       padding:6px 8px;
+                       background:#e50914;
+                       color:white;
+                       border-radius:6px;
+                       text-decoration:none;
+                       height:42px;
+                       display:flex;
+                       align-items:center;
+                       justify-content:center;
+                   ">
                    🔎
                 </a>
 
             </div>
 
-            <div class="btn-row">
+            <div style="text-align:center; margin-top:15px;">
 
-            <button type="submit" class="btn update">
-                💾 Mettre à jour
-            </button>
+                <button type="submit" class="btn update" style="width:70%;">
+                    💾 Mettre à jour
+                </button>
 
-            <a class="btn allocine"
-               href="https://www.themoviedb.org/search?query={urllib.parse.quote(title)}"
-               target="_blank">
-                🔎 TMDB
-            </a>
-
-        </div>
+            </div>
 
         </form>
     </div>
