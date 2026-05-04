@@ -595,7 +595,7 @@ nav_buttons = """
 app = Flask(__name__)
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-05-04_02-17-20"
+APP_BUILD = "2026-05-04_02-25-33"
 APP_NOTE = "dev en cours"
 
 
@@ -1280,16 +1280,16 @@ def confirm_add():
         <div class="card">
             <form method="post" action="/confirm_add_force">
 
-                <input type="hidden" name="title" value="{html.escape(request.form.get('title',''))}">
-                <input type="hidden" name="emplacement" value="{html.escape(request.form.get('emplacement',''))}">
-                <input type="hidden" name="type" value="{html.escape(request.form.get('type',''))}">
-                <input type="hidden" name="allocine" value="{html.escape(request.form.get('allocine',''))}">
-                <input type="hidden" name="tmdb_id" value="{html.escape(request.form.get('tmdb_id',''))}">
-                <input type="hidden" name="poster" value="{html.escape(request.form.get('poster',''))}">
-                <input type="hidden" name="year" value="{html.escape(request.form.get('year',''))}">
-                <input type="hidden" name="genres" value="{html.escape(request.form.get('genres',''))}">
-                <input type="hidden" name="overview" value="{html.escape(request.form.get('overview',''))}">
-                <input type="hidden" name="cast" value="{html.escape(request.form.get('cast',''))}">
+                <input type="hidden" name="title" value="{html_lib.escape(request.form.get('title',''))}">
+                <input type="hidden" name="emplacement" value="{html_lib.escape(request.form.get('emplacement',''))}">
+                <input type="hidden" name="type" value="{html_lib.escape(request.form.get('type',''))}">
+                <input type="hidden" name="allocine" value="{html_lib.escape(request.form.get('allocine',''))}">
+                <input type="hidden" name="tmdb_id" value="{html_lib.escape(request.form.get('tmdb_id',''))}">
+                <input type="hidden" name="poster" value="{html_lib.escape(request.form.get('poster',''))}">
+                <input type="hidden" name="year" value="{html_lib.escape(request.form.get('year',''))}">
+                <input type="hidden" name="genres" value="{html_lib.escape(request.form.get('genres',''))}">
+                <input type="hidden" name="overview" value="{html_lib.escape(request.form.get('overview',''))}">
+                <input type="hidden" name="cast" value="{html_lib.escape(request.form.get('cast',''))}">
 
                 <button class="btn new">✅ Ajouter quand même</button>
             </form>
@@ -1299,7 +1299,7 @@ def confirm_add():
         """
 
         conn.close()
-        return html
+        return page
 
     # ✅ SINON → INSERT NORMAL
     return insert_film(request.form)
