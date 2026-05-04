@@ -604,7 +604,7 @@ nav_buttons = """
 app = Flask(__name__)
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-05-04_10-27-15"
+APP_BUILD = "2026-05-04_11-01-06"
 APP_NOTE = "dev en cours"
 
 
@@ -1072,10 +1072,17 @@ def suggest_update(disc_id):
             <div class="titre">{film['title']} ({film['year']})</div>
 
             <div class="btn-row">
+
                 <button type="button" class="btn update"
-                    onclick="window.location.href='/confirm_update/{disc_id}/{film['id']}?q={query_encoded}'">
-                    ⚡ Remplir automatiquement
+                    onclick="window.location.href='/confirm_update/{disc_id}/{film['id']}?q={query_encoded}&title=1'">
+                    ⚡ Tout remplir (titre inclus)
                 </button>
+
+                <button type="button" class="btn allocine"
+                    onclick="window.location.href='/confirm_update/{disc_id}/{film['id']}?q={query_encoded}&title=0'">
+                    🧠 Garder le titre actuel
+                </button>
+
             </div>
         </div>
         """
@@ -1087,6 +1094,7 @@ def suggest_update(disc_id):
 #22 — UPDATE AUTO
 @app.route("/confirm_update/<disc_id>/<int:tmdb_id>")
 def confirm_update(disc_id, tmdb_id, query=""):
+    use_title = request.args.get("title") == "1"
 
     import sqlite3
 
@@ -1098,8 +1106,17 @@ def confirm_update(disc_id, tmdb_id, query=""):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
+    if use_title:
+        titre = data.get("title", "")
+    else:
+        cursor.execute("SELECT titre FROM films WHERE disc_id = ?", (disc_id,))
+        row = cursor.fetchone()
+        titre = row[0] if row else ""
+
+
     cursor.execute("""
     UPDATE films SET
+        titre = ?,
         tmdb_id = ?,
         jaquette = ?,
         annee = ?,
@@ -1108,6 +1125,7 @@ def confirm_update(disc_id, tmdb_id, query=""):
         casting = ?
     WHERE disc_id = ?
     """, (
+        titre,
         tmdb_id,
         f"https://image.tmdb.org/t/p/w300{data.get('poster_path','')}",
         data.get("release_date", "")[:4],
