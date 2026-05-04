@@ -624,7 +624,7 @@ nav_buttons = """
 app = Flask(__name__)
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-05-04_12-27-22"
+APP_BUILD = "2026-05-04_14-30-16"
 APP_NOTE = "dev en cours"
 
 
@@ -712,21 +712,28 @@ def home():
         </form>
    
         """
-        html += """
-        <div style="
-            position:fixed;
-            bottom:20px;
-            left:50%;
-            transform:translateX(-50%);
-            width:90%;
-            max-width:420px;
-            z-index:999;
-        ">
-            <div class="card">
-                <a class="btn allocine" href="/download_all">
-                    💾 Télécharger Films
+        html += f"""
+        <div class="card">
+
+            <div style="display:flex; gap:8px;">
+
+                <a class="btn allocine" href="/download_all" style="flex:1;">
+                    💾 Télécharger
                 </a>
+
+                <form action="/upload_db" method="post" enctype="multipart/form-data" style="flex:1; margin:0;">
+
+                    <input type="file" name="file" accept=".db" style="width:100%; margin-bottom:5px;">
+
+                    <button class="btn update" style="width:100%;"
+                        onclick="return confirm('⚠️ Remplacer la base actuelle ? Cette action est irréversible.')"
+                        📥 Restaurer
+                    </button>
+
+                </form>
+
             </div>
+
         </div>
         """
         return html
@@ -1934,6 +1941,56 @@ def download_all():
         as_attachment=True,
         download_name=zip_name
     )
+            
+#29E — UPLOAD DB
+@app.route("/upload_db", methods=["POST"])
+def upload_db():
+
+    if ENV != "DEV":
+        return "⛔ accès interdit"
+
+    from flask import request
+
+    file = request.files.get("file")
+
+    if not file:
+        return "❌ Aucun fichier"
+
+    if not file.filename.endswith(".db"):
+        return "❌ Format invalide"
+
+    temp_path = DB_PATH + ".upload"
+
+    file.save(temp_path)
+    
+    # 🔐 vérification DB valide
+    import sqlite3
+
+    try:
+        conn = sqlite3.connect(temp_path)
+        cursor = conn.cursor()
+        cursor.execute("SELECT 1 FROM films LIMIT 1")
+        conn.close(
+    except:
+        os.remove(temp_path)
+        return "❌ DB invalide"
+
+    # 🔥 sécurité taille minimale
+    if os.path.getsize(temp_path) < 1000:
+        os.remove(temp_path)
+        return "❌ Fichier invalide"
+
+    requests.get("https://ton-app.onrender.com/backup_db")
+
+    # 🔥 remplacement sécurisé
+    os.replace(temp_path, DB_PATH)
+
+    reset_cache()
+
+    return """
+    <h2>✅ Base remplacée</h2>
+    <a href="/">⬅️ Retour</a>
+    """
             
 #30 — HEALTH
 @app.route("/health")
