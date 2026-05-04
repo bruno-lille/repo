@@ -624,7 +624,7 @@ nav_buttons = """
 app = Flask(__name__)
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-05-04_14-34-00"
+APP_BUILD = "2026-05-04_14-54-23"
 APP_NOTE = "dev en cours"
 
 
@@ -713,26 +713,31 @@ def home():
    
         """
         html += f"""
-        <div class="card">
+        <div class="card" style="position:fixed; bottom:20px; left:10px; right:10px;">
 
-            <div style="display:flex; gap:8px;">
+            <a class="btn allocine" href="/download_all" style="width:100%; margin-bottom:10px;">
+                💾 Télécharger
+            </a>
 
-                <a class="btn allocine" href="/download_all" style="flex:1;">
-                    💾 Télécharger
-                </a>
+            <form action="/upload_db" method="post" enctype="multipart/form-data">
 
-                <form action="/upload_db" method="post" enctype="multipart/form-data" style="flex:1; margin:0;">
+                <input type="file" id="fileInput" name="file" accept=".db"
+                       style="display:none;"
+                       onchange="this.form.submit()">
 
-                    <input type="file" name="file" accept=".db" style="width:100%; margin-bottom:5px;">
+                <button type="button" class="btn new" style="width:100%; margin-bottom:8px;"
+                    onclick="document.getElementById('fileInput').click()">
+                    📂 Choisir fichier à restaurer
+                </button>
 
-                    <button class="btn update" style="width:100%;"
-                        onclick="return confirm('⚠️ Remplacer la base actuelle ? Cette action est irréversible.')"
-                        📥 Restaurer
-                    </button>
+                <button class="btn update" style="width:100%;"
+                    onclick="return confirm('Remplacer la base actuelle ?')">
+                    📥 Restaurer
+                </button>
+               
 
-                </form>
-
-            </div>
+            </form>
+       
 
         </div>
         """
