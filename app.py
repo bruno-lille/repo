@@ -604,7 +604,7 @@ nav_buttons = """
 app = Flask(__name__)
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-05-04_11-01-06"
+APP_BUILD = "2026-05-04_11-37-57"
 APP_NOTE = "dev en cours"
 
 
@@ -1047,13 +1047,52 @@ def suggest_update(disc_id):
 
             <input name="type" value="{type_disc}" placeholder="📀 Type (DVD/BLURAY)"><br><br>
 
-            <input name="allocine" value="{allocine}" placeholder="🔗 Allociné"><br><br>
+            <div style="display:flex; gap:6px; margin-bottom:10px;">
+
+                <input name="allocine"
+                       value="{allocine}"
+                       placeholder="🔗 Allociné"
+                       style="flex:1;">
+
+                <a class="btn allocine"
+                   href="https://www.google.com/search?q={urllib.parse.quote(title)}+allocine"
+                   target="_blank">
+                   🔎
+                </a>
+
+            </div>
 
             <input name="ordre" value="{ordre}" placeholder="🔢 Ordre" type="number" min="1"><br><br>
 
-            <input id="tmdb_input" name="tmdb_input" value="{tmdb_id}" placeholder="ID ou lien TMDB"><br><br>
+            <div style="display:flex; gap:6px; margin-bottom:10px;">
 
-            <button type="submit" class="btn update">💾 Mettre à jour</button>
+                <input id="tmdb_input"
+                       name="tmdb_input"
+                       value="{tmdb_id}"
+                       placeholder="ID ou lien TMDB"
+                       style="flex:1;">
+
+                <a class="btn allocine"
+                   href="https://www.themoviedb.org/search/movie?query={urllib.parse.quote(title)}"
+                   target="_blank">
+                   🔎
+                </a>
+
+            </div>
+
+            <div class="btn-row">
+
+            <button type="submit" class="btn update">
+                💾 Mettre à jour
+            </button>
+
+            <a class="btn allocine"
+               href="https://www.themoviedb.org/search?query={urllib.parse.quote(title)}"
+               target="_blank">
+                🔎 TMDB
+            </a>
+
+        </div>
 
         </form>
     </div>
