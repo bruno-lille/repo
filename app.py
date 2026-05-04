@@ -624,7 +624,7 @@ nav_buttons = """
 app = Flask(__name__)
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-05-04_14-30-16"
+APP_BUILD = "2026-05-04_14-34-00"
 APP_NOTE = "dev en cours"
 
 
@@ -1970,7 +1970,7 @@ def upload_db():
         conn = sqlite3.connect(temp_path)
         cursor = conn.cursor()
         cursor.execute("SELECT 1 FROM films LIMIT 1")
-        conn.close(
+        conn.close()
     except:
         os.remove(temp_path)
         return "❌ DB invalide"
