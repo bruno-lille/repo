@@ -624,7 +624,7 @@ nav_buttons = """
 app = Flask(__name__)
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-05-04_15-25-32"
+APP_BUILD = "2026-05-04_15-36-06"
 APP_NOTE = "dev en cours"
 
 
@@ -736,13 +736,13 @@ def home():
         </div>
 
         <script>
-        function confirmUpload(input) {
-            if (confirm("⚠️ Remplacer la base actuelle ? Cette action est irréversible.")) {
+        function confirmUpload(input) {{
+            if (confirm("⚠️ Remplacer la base actuelle ? Cette action est irréversible.")) {{
                 input.form.submit();
-            } else {
+            }} else {{
                 input.value = "";
-            }
-        }
+            }}
+        }}
         </script>
         """
         return html
