@@ -469,6 +469,25 @@ def get_style():
     }
     </script>
   
+    <script>
+    async function smartPaste(input) {
+
+        // sélectionner tout le texte
+        input.select();
+
+        try {
+            // tentative de lecture du presse-papier
+            const text = await navigator.clipboard.readText();
+
+            if (text && text.startsWith("http")) {
+                input.value = text;
+            }
+
+        } catch (err) {
+            // fallback → rien (iPhone va juste sélectionner)
+        }
+    }
+    </script>
     
     <script>
     function updateCount() {
@@ -605,7 +624,7 @@ nav_buttons = """
 app = Flask(__name__)
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-05-04_12-12-19"
+APP_BUILD = "2026-05-04_12-27-22"
 APP_NOTE = "dev en cours"
 
 
@@ -1053,7 +1072,8 @@ def suggest_update(disc_id):
                 <input name="allocine"
                        value="{allocine}"
                        placeholder="🔗 Allociné"
-                       style="flex:1;">
+                       style="flex:1;"
+                       onclick="smartPaste(this)">
 
                 <a href="https://www.google.com/search?q={urllib.parse.quote(title)}+allocine"
                    target="_blank"
@@ -1082,7 +1102,8 @@ def suggest_update(disc_id):
                        name="tmdb_input"
                        value="{tmdb_id}"
                        placeholder="ID ou lien TMDB"
-                       style="flex:1;">
+                       style="flex:1;"
+                       onclick="smartPaste(this)">
 
                 <a href="https://www.themoviedb.org/search/movie?query={urllib.parse.quote(title)}"
                    target="_blank"
