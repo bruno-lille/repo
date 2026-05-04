@@ -459,6 +459,15 @@ def get_style():
     return """
     <meta name="viewport" content="width=device-width, initial-scale=1">
     
+    <script>
+    window.onload = function() {
+        let input = document.getElementById("title");
+        if (input) {
+            input.focus();
+            input.select();
+        }
+    }
+    </script>
   
     
     <script>
@@ -583,7 +592,7 @@ nav_buttons = """
 <div class="card">
     <div class="btn-row">
         <a class="btn retour" href="javascript:history.back()">⬅️ Retour</a>
-        <a class="btn new" href="/">❌ Annuler</a>
+        <a class="btn new" href="/">🏠 Accueil</a>
     </div>
 </div>
 """
@@ -595,7 +604,7 @@ nav_buttons = """
 app = Flask(__name__)
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-05-04_02-25-33"
+APP_BUILD = "2026-05-04_10-27-15"
 APP_NOTE = "dev en cours"
 
 
@@ -954,16 +963,17 @@ def count():
     
 #✏️ 🟡 GESTION FILMS
 #21 — SUGGEST UPDATE
-#ancien10 ----------- PAGE CORRECTION -----------
 @app.route("/suggest_update/<disc_id>")
 def suggest_update(disc_id):
 
     import sqlite3
     import urllib.parse
+    
+    print("DISC_ID REÇU =", disc_id)
 
     query = request.args.get("q", "")
     query_encoded = urllib.parse.quote(query)
-    results_tmdb = search_tmdb_multi(query)
+    
 
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
@@ -971,10 +981,19 @@ def suggest_update(disc_id):
 
     cursor.execute("SELECT * FROM films WHERE disc_id = ?", (disc_id,))
     film = cursor.fetchone()
+
+    
+    if film:
+        print("FILM TROUVÉ =", film["titre"])
+    else:
+        print("❌ AUCUN FILM TROUVÉ")
+
     conn.close()
 
     if not film:
         return "❌ Film introuvable"
+        
+    results_tmdb = search_tmdb_multi(query)
 
     title = film["titre"] or ""
     emplacement = film["emplacement"] or ""
@@ -1010,8 +1029,19 @@ def suggest_update(disc_id):
         <h3>✏️ Modifier complètement</h3>
 
         <form action="/manual_update/{disc_id}?q={query_encoded}" method="post">
+        
+            
+            <div style="margin-bottom:10px; font-size:13px; color:#888;">
+                🆔 {film["disc_id"]}
+            </div>
 
-            <input id="title" name="title" value="{title}" placeholder="Titre"><br><br>
+            <div style="font-size:11px; color:#555;">
+                DEBUG: {film["disc_id"]}
+            </div>
+
+            <input type="hidden" name="disc_id" value="{film['disc_id']}">
+
+            <input id="title" name="title" value="{title}" placeholder="Titre" autofocus><br><br>
 
             <input name="emplacement" value="{emplacement}" placeholder="📁 Emplacement"><br><br>
 
@@ -1049,8 +1079,9 @@ def suggest_update(disc_id):
             </div>
         </div>
         """
-        
-
+    # print("DISC_ID REÇU =", disc_id)
+    # print("FILM TROUVÉ =", film["titre"])
+    
     return html
     
 #22 — UPDATE AUTO
