@@ -8,7 +8,7 @@ import urllib.parse
 import unicodedata
 import re
 import time
-import html
+import html as html_lib
 from datetime import datetime
 from openpyxl import Workbook
 
@@ -595,7 +595,7 @@ nav_buttons = """
 app = Flask(__name__)
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-05-04_01-57-07"
+APP_BUILD = "2026-05-04_02-09-09"
 APP_NOTE = "dev en cours"
 
 
@@ -1261,19 +1261,19 @@ def confirm_add():
     # 🚨 SI DOUBLON → PAGE CONFIRMATION
     if doublons:
 
-        html = get_style()
-        html += f"<h2>⚠️ Doublon détecté : {html.escape(titre)}</h2>"
-        html += "<p>Ce film existe déjà dans votre collection :</p>"
+        page = get_style()
+        page += f"<h2>⚠️ Doublon détecté : {html_lib.escape(titre)}</h2>"
+        page += "<p>Ce film existe déjà dans votre collection :</p>"
 
         for d in doublons:
-            html += f"""
-            <div style="margin:8px 0; font-size:15px;">
-                🎬 {d[0]} <br>
-                📀 {d[2]} &nbsp;&nbsp;
-                🆔 {d[1]} &nbsp;&nbsp;
-                📁 {d[3] or '-'}
-            </div>
-            """
+            page += f"""
+        <div style="margin:8px 0; font-size:15px;">
+            🎬 {html_lib.escape(d[0])} <br>
+            📀 {html_lib.escape(d[2] or '')} &nbsp;&nbsp;
+            🆔 {html_lib.escape(d[1] or '')} &nbsp;&nbsp;
+            📁 {html_lib.escape(d[3] or '-')}
+        </div>
+        """
 
         # 🔥 FORMULAIRE POUR FORCER
         html += f"""
