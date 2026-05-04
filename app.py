@@ -595,7 +595,7 @@ nav_buttons = """
 app = Flask(__name__)
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-05-04_02-09-09"
+APP_BUILD = "2026-05-04_02-17-20"
 APP_NOTE = "dev en cours"
 
 
@@ -1276,7 +1276,7 @@ def confirm_add():
         """
 
         # 🔥 FORMULAIRE POUR FORCER
-        html += f"""
+        page += f"""
         <div class="card">
             <form method="post" action="/confirm_add_force">
 
