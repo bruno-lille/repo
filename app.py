@@ -622,7 +622,7 @@ nav_buttons = """
 app = Flask(__name__)
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-05-05_11-19-52"
+APP_BUILD = "2026-05-05_11-36-32"
 APP_NOTE = "dev en cours"
 
 
@@ -790,7 +790,7 @@ def home():
     
     # 🔥 SI RIEN APRES FILTRAGE → ajout direct
     if not results and query.strip():
-        return redirect(f"/manual_new?q={urllib.parse.quote(query)}")
+        return redirect(f"/suggest_update_new?q={urllib.parse.quote(query)}")
 
     # =========================
     # 🎯 SI RESULTATS
@@ -1130,6 +1130,69 @@ def suggest_update(disc_id):
     # print("DISC_ID REÇU =", disc_id)
     # print("FILM TROUVÉ =", film["titre"])
     
+    return html
+    
+#21B — SUGGEST UPDATE NEW (ajout direct)
+@app.route("/suggest_update_new")
+def suggest_update_new():
+
+    import urllib.parse
+
+    query = request.args.get("q", "").strip()
+    query_encoded = urllib.parse.quote(query)
+
+    # 🎯 faux film vide
+    film = {
+        "disc_id": "NEW",
+        "titre": query,
+        "emplacement": "",
+        "type": "",
+        "allocine": "",
+        "ordre": "",
+        "tmdb_id": ""
+    }
+
+    # ⚡ on reprend EXACTEMENT ton système existant
+    title = query
+    emplacement = ""
+    type_disc = ""
+    allocine = ""
+    ordre = ""
+    tmdb_id = ""
+
+    html = get_style()
+
+    html += f"""
+    <h2>➕ Nouveau film</h2>
+
+    <div class="card">
+        <a class="btn retour" href="/?q={query_encoded}">⬅️ Retour</a>
+        <a class="btn new" href="/">❌ Annuler</a>
+    </div>
+
+    <div class="card">
+        <h3>✏️ Ajouter / Modifier</h3>
+
+        <form action="/confirm_add" method="post">
+
+            <input id="title" name="title" value="{title}" placeholder="Titre" autofocus><br><br>
+
+            <input name="emplacement" value="{emplacement}" placeholder="📁 Emplacement"><br><br>
+
+            <input name="type" value="{type_disc}" placeholder="📀 Type"><br><br>
+
+            <input name="allocine" value="{allocine}" placeholder="🔗 Allociné"><br><br>
+
+            <input name="ordre" value="{ordre}" placeholder="🔢 Ordre"><br><br>
+
+            <input name="tmdb_id" value="{tmdb_id}" placeholder="ID TMDB"><br><br>
+
+            <button class="btn new">✅ Ajouter</button>
+
+        </form>
+    </div>
+    """
+
     return html
     
 #22 — UPDATE AUTO
