@@ -622,7 +622,7 @@ nav_buttons = """
 app = Flask(__name__)
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-05-05_11-13-48"
+APP_BUILD = "2026-05-05_11-19-52"
 APP_NOTE = "dev en cours"
 
 
@@ -751,9 +751,7 @@ def home():
     rows = search_films_sql(query, exact_mode)
     results_db = list(rows)
 
-    # 🔥 SI AUCUN RESULTAT → redirection immédiate
-    if not results_db and query.strip():
-        return redirect(f"/manual_new?q={urllib.parse.quote(query)}")
+
 
     # 🔥 fallback pour affichage (sécurité)
     results = results_db
@@ -789,6 +787,10 @@ def home():
             filtered.append(row)
 
     results = [r for r in filtered if r["titre"]]
+    
+    # 🔥 SI RIEN APRES FILTRAGE → ajout direct
+    if not results and query.strip():
+        return redirect(f"/manual_new?q={urllib.parse.quote(query)}")
 
     # =========================
     # 🎯 SI RESULTATS
