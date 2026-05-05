@@ -622,7 +622,7 @@ nav_buttons = """
 app = Flask(__name__)
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-05-05_11-36-32"
+APP_BUILD = "2026-05-05_11-52-47"
 APP_NOTE = "dev en cours"
 
 
@@ -788,9 +788,9 @@ def home():
 
     results = [r for r in filtered if r["titre"]]
     
-    # 🔥 SI RIEN APRES FILTRAGE → ajout direct
+    # 🔥 SI AUCUN RESULTAT FINAL → aller modifier/ajouter
     if not results and query.strip():
-        return redirect(f"/suggest_update_new?q={urllib.parse.quote(query)}")
+        return redirect(f"/suggest_update/NEW?q={urllib.parse.quote(query)}")
 
     # =========================
     # 🎯 SI RESULTATS
@@ -841,7 +841,7 @@ def home():
 
         bloc += f"""
         <div class="card">
-            <a class="btn allocine" href="/?q={query_encoded}&mode={mode}&suggest=1">
+            href="/suggest_update/NEW?q={query_encoded}"
                 🔎 Plus de résultats TMDB
             </a>
         </div>
