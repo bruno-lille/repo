@@ -624,7 +624,7 @@ nav_buttons = """
 app = Flask(__name__)
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-05-04_15-36-06"
+APP_BUILD = "2026-05-05_10-37-59"
 APP_NOTE = "dev en cours"
 
 
@@ -1091,7 +1091,8 @@ def suggest_update(disc_id):
                        style="flex:1;"
                        onclick="smartPaste(this)">
 
-                <a href="https://www.google.com/search?q={urllib.parse.quote(title)}+allocine"
+                <a href="#"
+                    onclick="searchAllocine(); return false;"
                    target="_blank"
                    style="
                        font-size:12px;
@@ -1121,7 +1122,8 @@ def suggest_update(disc_id):
                        style="flex:1;"
                        onclick="smartPaste(this)">
 
-                <a href="https://www.themoviedb.org/search/movie?query={urllib.parse.quote(title)}"
+                <a href="#"
+                    onclick="searchTMDB(); return false;"
                    target="_blank"
                    style="
                        font-size:12px;
@@ -1150,6 +1152,20 @@ def suggest_update(disc_id):
 
         </form>
     </div>
+    
+    <script>
+    function searchAllocine() {{
+        let title = document.getElementById("title").value;
+        let url = "https://www.google.com/search?q=" + encodeURIComponent(title + " allocine");
+        window.open(url, "_blank");
+    }}
+
+    function searchTMDB() {{
+        let title = document.getElementById("title").value;
+        let url = "https://www.themoviedb.org/search/movie?query=" + encodeURIComponent(title);
+        window.open(url, "_blank");
+    }}
+    </script>
     """
 
     for film in results_tmdb:
