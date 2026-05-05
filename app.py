@@ -622,7 +622,7 @@ nav_buttons = """
 app = Flask(__name__)
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-05-05_11-02-49"
+APP_BUILD = "2026-05-05_11-13-48"
 APP_NOTE = "dev en cours"
 
 
@@ -755,20 +755,17 @@ def home():
     if not results_db and query.strip():
         return redirect(f"/manual_new?q={urllib.parse.quote(query)}")
 
-    # 🔥 fallback pour affichage
+    # 🔥 fallback pour affichage (sécurité)
     results = results_db
     if not results:
         rows = search_films_sql("", False)
         results = list(rows)
 
-    
-    # 🔥 NORMALISATION
+    # =========================
+    # 🔍 FILTRAGE
+    # =========================
     q_norm = normalize(query)
-
-    # 🔥 découpage AVANT normalisation
     q_words_raw = query.lower().split()
-
-    # 🔥 mots normalisés individuellement
     q_words = [normalize(w) for w in q_words_raw]
 
     filtered = []
@@ -777,15 +774,12 @@ def home():
 
         titre_norm = normalize(row["titre"])
 
-        # 🔥 MODE EXACT
         if exact_mode:
             if titre_norm == q_norm:
                 filtered.append(row)
             continue
 
-        # 🔥 MODE MULTI-MOTS INTELLIGENT
         match = True
-
         for q in q_words:
             if q not in titre_norm:
                 match = False
@@ -840,6 +834,7 @@ def home():
                 </div>
             </div>
             """
+
         query_encoded = urllib.parse.quote(query_raw)
 
         bloc += f"""
@@ -849,8 +844,7 @@ def home():
             </a>
         </div>
         """
-        
-        # 🔥 SUGGESTIONS TMDB
+
         if show_suggest:
             results_tmdb = search_tmdb_multi(query_raw)
 
@@ -872,8 +866,11 @@ def home():
 
         bloc += nav_buttons
         return html + bloc
-        
 
+    # =========================
+    # 🔐 FALLBACK SÉCURITÉ
+    # =========================
+    return html
 
     
 #20 — COUNT
