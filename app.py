@@ -622,7 +622,7 @@ nav_buttons = """
 app = Flask(__name__)
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-05-05_11-52-47"
+APP_BUILD = "2026-05-05_12-01-44"
 APP_NOTE = "dev en cours"
 
 
@@ -950,15 +950,22 @@ def suggest_update(disc_id):
     cursor.execute("SELECT * FROM films WHERE disc_id = ?", (disc_id,))
     film = cursor.fetchone()
 
-    
-    if film:
-        print("FILM TROUVÉ =", film["titre"])
-    else:
-        print("❌ AUCUN FILM TROUVÉ")
-
-    conn.close()
-
-    if not film:
+    if disc_id == "NEW":
+        film = {
+            "disc_id": "NEW",
+            "titre": query,
+            "emplacement": "",
+            "type": "",
+            "allocine": "",
+            "ordre": "",
+            "tmdb_id": "",
+            "jaquette": "",
+            "annee": "",
+            "genres": "",
+            "resume": "",
+            "casting": ""
+        }
+    elif not film:
         return "❌ Film introuvable"
         
     results_tmdb = search_tmdb_multi(query)
