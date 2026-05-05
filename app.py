@@ -622,7 +622,7 @@ nav_buttons = """
 app = Flask(__name__)
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-05-05_10-56-43"
+APP_BUILD = "2026-05-05_11-02-49"
 APP_NOTE = "dev en cours"
 
 
@@ -759,9 +759,9 @@ def home():
     results = results_db
     if not results:
         rows = search_films_sql("", False)
-        results = list(rows))
+        results = list(rows)
 
-    # 🔥 normalisation
+    
     # 🔥 NORMALISATION
     q_norm = normalize(query)
 
@@ -873,78 +873,8 @@ def home():
         bloc += nav_buttons
         return html + bloc
         
-    # 🔥 AUCUN RESULTAT → TMDB DIRECT
-    results_tmdb = search_tmdb_multi(query_raw)
 
-    # =========================
-    # 🎬 SI TMDB TROUVE
-    # =========================
-    if results_tmdb:
 
-        bloc = f"<h2>🎬 {query} n'existe pas dans ma liste mais voici les résultats TMDB</h2>"
-        bloc += nav_buttons
-
-        for film in results_tmdb:
-            bloc += f"""
-            <div class="card">
-                <img src="{film['img'] or 'https://via.placeholder.com/300x450?text=No+Image'}">
-                <div>{film['title']} ({film['year']})</div>
-
-                <div class="btn-row">
-                    <a class="btn new" href="/add/{film['id']}?q={urllib.parse.quote(query_raw)}">
-                        ➕ Ajouter
-                    </a>
-                </div>
-            </div>
-            """
-
-        bloc += nav_buttons
-        return html + bloc
-
-    # =========================
-    # ❌ SI TMDB VIDE → FORMULAIRE
-    # =========================
-    query_encoded = urllib.parse.quote(query_raw)
-
-    bloc = f"<h2>❌ {query} introuvable — Ajout manuel</h2>"
-    bloc += nav_buttons
-
-    bloc += f"""
-    <div class="card">
-        <h3>✍️ Ajouter ce film</h3>
-
-        <form method="post" action="/manual_add">
-
-            <input name="title" value="{query.title()}" placeholder="Titre" required><br><br>
-
-            <input name="emplacement" placeholder="📁 Emplacement"><br><br>
-
-            <input name="type" placeholder="📀 Type (DVD/BLURAY)"><br><br>
-
-            <input name="allocine" value="https://www.google.com/search?q={query_encoded}+allocine" placeholder="🔗 Allociné"><br><br>
-
-            <input name="tmdb_input" placeholder="ID ou lien TMDB"><br><br>
-
-            <div class="btn-row">
-                <a class="btn allocine" href="https://www.google.com/search?q={query_encoded}+allocine+film" target="_blank">
-                    🎬 Chercher Allociné
-                </a>
-
-                <a class="btn allocine" href="https://www.themoviedb.org/search?query={query_encoded}" target="_blank">
-                    🔎 Chercher TMDB
-                </a>
-            </div>
-
-            <br>
-
-            <button class="btn new">➕ Ajouter</button>
-
-        </form>
-    </div>
-    """
-
-    bloc += nav_buttons
-    return html + bloc
     
 #20 — COUNT
 @app.route("/count")
