@@ -225,8 +225,6 @@ def init_app():
         
 #💾 🔵 DATABASE
 #08 — SQL CORE
-#Ancien03------------FONCTION SQL------------
-
 def search_films_sql(query, exact_mode=False):
     import sqlite3
 
@@ -624,7 +622,7 @@ nav_buttons = """
 app = Flask(__name__)
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-05-05_10-37-59"
+APP_BUILD = "2026-05-05_10-56-43"
 APP_NOTE = "dev en cours"
 
 
@@ -751,12 +749,17 @@ def home():
     # 🔍 RECHERCHE
     # =========================
     rows = search_films_sql(query, exact_mode)
-    results = list(rows)
+    results_db = list(rows)
 
-    # 🔥 fallback large si vide
+    # 🔥 SI AUCUN RESULTAT → redirection immédiate
+    if not results_db and query.strip():
+        return redirect(f"/manual_new?q={urllib.parse.quote(query)}")
+
+    # 🔥 fallback pour affichage
+    results = results_db
     if not results:
         rows = search_films_sql("", False)
-        results = list(rows)
+        results = list(rows))
 
     # 🔥 normalisation
     # 🔥 NORMALISATION
