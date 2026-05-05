@@ -622,7 +622,7 @@ nav_buttons = """
 app = Flask(__name__)
 
 APP_VERSION = "V1-dev"
-APP_BUILD = "2026-05-05_12-01-44"
+APP_BUILD = "2026-05-05_12-27-58"
 APP_NOTE = "dev en cours"
 
 
@@ -841,8 +841,8 @@ def home():
 
         bloc += f"""
         <div class="card">
-            href="/suggest_update/NEW?q={query_encoded}"
-                🔎 Plus de résultats TMDB
+            <a class="btn update" href="/suggest_update/NEW?q={query_encoded}">
+                ✏️ Autre Recherche/Ajout
             </a>
         </div>
         """
